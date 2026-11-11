@@ -1,0 +1,25 @@
+# Safety net for cPanel when the domain's document root is the project root.
+# Preferred setup: point the domain's document root at /public instead (see docs/ARCHITECTURE.md).
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Never serve dotfiles (.env, .git, ...) or framework internals
+    RewriteRule (^|/)\.(?!well-known) - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|docs)(/|$) - [F,L]
+    RewriteRule \.(env|lock|md|log)$ - [F,L]
+
+    # Local XAMPP convenience: http://localhost/abiha.pk/  ->  http://localhost/abiha.pk/public/
+    # (the app lives in public/; opened without it, Laravel builds wrong CSS/image URLs and you see an unstyled page).
+    # Only for localhost; on a real domain the internal rewrite below applies and the URL never shows /public.
+    RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
+    RewriteCond %{REQUEST_URI} !/public(/|$)
+    RewriteCond %{REQUEST_URI}::$1 ^(.*?/)(.*)::\2$
+    RewriteRule ^(.*)$ - [E=ABIHA_BASE:%1]
+    RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
+    RewriteCond %{REQUEST_URI} !/public(/|$)
+    RewriteRule ^(.*)$ %{ENV:ABIHA_BASE}public/$1 [R=302,L]
+
+    # Everything else is handled by public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

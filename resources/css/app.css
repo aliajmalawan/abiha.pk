@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* ABIHA® design system (Phase 1). Layered so Tailwind utilities can override components. */
+@import "./tokens.css" layer(base);
+@import "./base.css" layer(base);
+@import "./components.css" layer(components);
+@import "./motion.css" layer(components);
+@import "./home.css" layer(components);
+
+@source "../views";
+/* Tailwind v4 scans the whole project by default. Keep tests, docs and caches out so words in them never generate CSS. */
+@source not "../../tests";
+@source not "../../docs";
+@source not "../../storage";
+@source not "../../vendor";
+@source "../../app/View";
+
+/* Map ABIHA tokens into Tailwind so utilities (bg-ivory, text-gold-text, font-display…) share one source of truth */
+@theme inline {
+    --color-ink: var(--abiha-black);
+    --color-gold: var(--abiha-gold);
+    --color-champagne: var(--abiha-champagne);
+    --color-ivory: var(--abiha-ivory);
+    --color-grey: var(--abiha-grey);
+    --color-line: var(--abiha-border);
+    --color-input: var(--border-input);
+    --color-gold-text: var(--gold-text);
+    --color-grey-text: var(--grey-text);
+    --color-success: var(--success);
+    --color-danger: var(--danger);
+    --color-warning: var(--warning);
+
+    --font-heading: "Cormorant Garamond", "Cormorant", Garamond, "Times New Roman", Georgia, serif;
+    --font-display: "Inter", system-ui, sans-serif;
+    --font-sans: "Inter", system-ui, sans-serif;
+
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-xl: 16px;
+
+    --shadow-soft: var(--shadow-sm);
+    --shadow-card: var(--shadow-md);
+    --shadow-lift: var(--shadow-lg);
+
+    --breakpoint-sm: 30rem;   /* 480  */
+    --breakpoint-md: 48rem;   /* 768  */
+    --breakpoint-lg: 64rem;   /* 1024 */
+    --breakpoint-xl: 80rem;   /* 1280 */
+    --breakpoint-2xl: 96rem;  /* 1536 */
+}
+
+[x-cloak] { display: none !important; }
+
+/* Cross-document page transitions: a short cross-fade where the browser supports it; ignored elsewhere. */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+    ::view-transition-old(root) { animation: vt-out 0.14s ease both; }
+    ::view-transition-new(root) { animation: vt-in 0.22s ease both; }
+}
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; } }
+
+/* Admin product form */
+.pf-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.pf-card{padding:var(--sp-5)}
+@media (min-width:640px){.pf-card{padding:var(--sp-6)}}
+.pf-card__head{display:flex;align-items:center;gap:var(--sp-3);padding-bottom:var(--sp-4);border-bottom:1px solid var(--border)}
+.pf-card__icon{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--abiha-black);color:var(--abiha-champagne)}
+.pf-spec{display:grid;gap:var(--sp-2);grid-template-columns:1fr;padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--abiha-ivory)}
+@media (min-width:640px){.pf-spec{grid-template-columns:1fr 2fr auto;align-items:center;padding:0;border:0;background:transparent}}
+.pf-variant{border:1px solid var(--border);border-left:3px solid var(--abiha-gold);border-radius:var(--radius-md);padding:var(--sp-4);display:grid;gap:var(--sp-3);background:var(--abiha-ivory)}
+.pf-drop{display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);text-align:center;padding:var(--sp-8) var(--sp-4);border:2px dashed var(--border-input);border-radius:var(--radius-lg);background:var(--abiha-ivory);cursor:pointer;transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease)}
+.pf-drop:hover,.pf-drop:focus-within,.pf-drop--over{border-color:var(--abiha-gold);background:#fff}
+.pf-drop__icon{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--abiha-black);color:var(--abiha-champagne)}
+.pf-drop__title{font-weight:var(--fw-semibold)}
+.pf-drop__hint{font-size:var(--fs-sm);color:var(--text-secondary)}
+.pf-toggle{padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--radius-md);align-items:center}
+.pf-toggle:has(input:checked){border-color:var(--abiha-gold);background:var(--abiha-ivory)}
+.pf-size{display:flex;gap:var(--sp-3);align-items:flex-start;margin-top:var(--sp-3);padding:var(--sp-3) var(--sp-4);border-left:3px solid var(--abiha-gold);background:var(--abiha-ivory);border-radius:var(--radius-md);font-size:var(--fs-sm);color:var(--text-secondary)}
+.pf-size svg{flex:none;margin-top:2px;color:var(--abiha-gold)}
+.pf-size p{margin:0 0 var(--sp-1)}
+.pf-size strong{color:var(--text-primary)}
+.pf-bar{position:sticky;bottom:12px;z-index:30;display:flex;flex-direction:column;gap:var(--sp-3);padding:var(--sp-3);background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(16,16,16,.14)}
+.pf-bar__info{display:none;align-items:center;gap:var(--sp-3);min-width:0}
+.pf-bar__info p{margin:0;display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.pf-bar__label{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary)}
+.pf-bar__info strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42ch}
+.pf-bar__dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--abiha-gold)}
+.pf-bar__actions{display:flex;gap:var(--sp-3);flex-direction:column-reverse}
+.pf-bar__cancel,.pf-bar__save{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:48px;padding:0 var(--sp-6);border-radius:999px;font-weight:var(--fw-semibold);font-size:var(--fs-sm);cursor:pointer;text-decoration:none;transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
+.pf-bar__cancel{background:#fff;color:var(--abiha-black);border:1px solid var(--border-input)}
+.pf-bar__cancel:hover{border-color:var(--abiha-black)}
+.pf-bar__save{background:var(--abiha-black);color:var(--abiha-champagne);border:1px solid var(--abiha-black)}
+.pf-bar__save:hover{background:var(--abiha-gold);border-color:var(--abiha-gold);color:var(--abiha-black)}
+.pf-bar__cancel:focus-visible,.pf-bar__save:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(201,154,53,.5)}
+@media (min-width:640px){
+  .pf-bar{flex-direction:row;align-items:center;justify-content:space-between;padding:var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-5)}
+  .pf-bar__info{display:flex}
+  .pf-bar__actions{flex-direction:row}
+}
+.pf-bar{bottom:8px;margin-top:var(--sp-2)}
+@media (min-width:640px){.pf-bar__cancel,.pf-bar__save{min-height:44px;padding:0 var(--sp-5)}.pf-bar{padding:var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-5)}}
+
+/* Admin row actions: Edit / Delete */
+.act-group{display:inline-flex;align-items:center;gap:var(--sp-2)}
+.act{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:999px;font-size:var(--fs-xs);font-weight:var(--fw-semibold);line-height:1;text-decoration:none;cursor:pointer;border:1px solid var(--border-input);background:#fff;color:var(--abiha-black);transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
+.act:hover{background:var(--abiha-black);border-color:var(--abiha-black);color:var(--abiha-champagne)}
+.act--del{color:var(--danger);border-color:rgba(176,32,32,.35)}
+.act--del:hover{background:var(--danger);border-color:var(--danger);color:#fff}
+.act:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(201,154,53,.5)}
+
+/* Courier logos */
+.carrier-tile{display:inline-flex;align-items:center;justify-content:center;flex:none;padding:6px 12px;background:#fff;border:1px solid var(--border);border-radius:10px;min-width:64px}
+.carrier-tile--lg{padding:10px 18px;min-width:96px}
+.carrier-strip{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3);margin-top:var(--sp-6);padding:var(--sp-4);background:var(--abiha-ivory);border-radius:var(--radius-lg)}
+.carrier-strip__label{font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-right:var(--sp-2)}
+.footer__bar-in{flex-wrap:wrap;gap:var(--sp-3)}
+.footer__ship{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2);font-size:var(--fs-xs);color:rgba(255,255,255,.7)}
+.footer__ship>span:first-child{margin-right:var(--sp-1)}
+.footer__ship-tile{display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:8px;padding:4px 10px;min-width:56px}
+.footer__ship-tile{width:84px;height:38px;padding:4px 8px;min-width:0}
+.footer__ship-tile img,.carrier-tile--lg img{height:auto!important;width:auto!important;max-width:100%;max-height:26px;object-fit:contain}
+.carrier-tile--lg{width:120px;height:56px;padding:6px 12px}.carrier-tile--lg img{max-height:38px}
+.footer__ship-tile .carrier-logo,.carrier-tile--lg .carrier-logo{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.carrier-tile{width:88px;height:44px}.carrier-tile img{height:auto!important;width:auto!important;max-width:100%;max-height:28px;object-fit:contain}
+@media (max-width:639px){.footer__bar{padding-bottom:4.5rem}.footer__ship{justify-content:center}}
+
+/* Admin: logo / favicon cards */
+.brandbox{display:grid;gap:var(--sp-3)}
+.brandbox__stage{display:grid;place-items:center;min-height:130px;padding:var(--sp-4);border:1px dashed var(--border-input);border-radius:var(--radius-lg);background-color:#fff;background-image:linear-gradient(45deg,#f1efe9 25%,transparent 25%,transparent 75%,#f1efe9 75%),linear-gradient(45deg,#f1efe9 25%,transparent 25%,transparent 75%,#f1efe9 75%);background-size:16px 16px;background-position:0 0,8px 8px}
+.brandbox__stage--new{border-color:var(--abiha-gold);border-style:solid}
+.brandbox__img{max-height:90px;max-width:100%;width:auto;object-fit:contain}
+.brandbox__img--icon{width:64px;height:64px;image-rendering:auto}
+.brandbox__state{margin:0;font-size:var(--fs-sm);color:var(--text-secondary)}
+.brandbox__tab{display:inline-flex;align-items:center;gap:8px;max-width:240px;padding:8px 14px;border-radius:10px 10px 0 0;background:#dee1e6;color:#202124;font-size:12px;font-family:system-ui,sans-serif}
+.brandbox__tab img{flex:none}
+.brandbox__tab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

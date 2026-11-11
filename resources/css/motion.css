@@ -1,0 +1,98 @@
+/* ==========================================================================
+   ABIHA® motion & polish.
+   Rules: transform + opacity only (no layout thrash); 150-600ms; one easing curve;
+   every animation is opt-in via no-preference, and `reduce` removes the rest.
+   No gradients, no blur, no decorative shadows: motion does the talking, quietly.
+   ========================================================================== */
+
+html{scrollbar-gutter:stable}
+.scroll-locked{overflow:hidden}                      /* set by the dialog focus-trap while any dialog is open */
+
+/* ---------- Page entrance (browsers without cross-document view transitions) ---------- */
+@media (prefers-reduced-motion:no-preference){
+  @supports not (view-transition-name:none){
+    main{animation:page-in .28s var(--ease) both}
+  }
+}
+@keyframes page-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- Scroll reveal (JS adds .js to <html>; without JS nothing is ever hidden) ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .js [data-reveal]{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease);transition-delay:var(--reveal-delay,0s)}
+  .js [data-reveal].is-visible{opacity:1;transform:none}
+}
+
+/* ---------- Buttons: press + success micro-interactions ---------- */
+.btn{transition:background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease),transform var(--dur-fast) var(--ease),opacity var(--dur) var(--ease)}
+.btn:active:not([disabled]){transform:scale(.98)}
+.btn--gold:hover{box-shadow:none}                    /* colour change is enough; no glow */
+.btn svg{transition:transform var(--dur) var(--ease)}
+.btn--arrow:hover svg{transform:translateX(3px)}
+.btn.is-done{--bg:var(--success);--bd:var(--success);--fg:#fff}
+.btn.is-done .btn-label{display:none}
+.btn .btn-done{display:none;align-items:center;gap:var(--sp-2)}
+.btn.is-done .btn-done{display:inline-flex}
+.btn.is-loading{cursor:progress}
+
+/* ---------- Cards & links: understated hover ---------- */
+.card--hover{transition:border-color var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.card--hover:hover{border-color:var(--abiha-black);box-shadow:none}
+.product-card__wish{transition:transform var(--dur-fast) var(--ease),background var(--dur) var(--ease)}
+.product-card__wish:hover{box-shadow:none;background:#fff;transform:scale(1.06)}
+.product-card__wish:active{transform:scale(.94)}
+.product-card__media img{transition:opacity .5s var(--ease),transform .9s var(--ease)}
+.product-card:hover .product-card__media img{transform:scale(1.03)}
+@media (hover:none){.product-card:hover .product-card__media img{transform:none}}
+
+/* ---------- Skeleton loaders (pulse only: no shimmer gradient) ---------- */
+.skeleton{background:var(--abiha-border);border-radius:var(--radius-md);display:block}
+.skeleton--line{height:.9rem}
+.skeleton--thumb{aspect-ratio:4/5}
+@media (prefers-reduced-motion:no-preference){
+  .skeleton{animation:skeleton-pulse 1.4s ease-in-out infinite}
+}
+@keyframes skeleton-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ---------- Dialog surfaces ---------- */
+.dialog-scrim{background:rgba(16,16,16,.5)}
+.dialog-surface{background:#fff}
+.dialog-surface:focus{outline:none}                  /* container focus is programmatic only */
+
+/* ---------- Toast ---------- */
+.toast{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);border-radius:var(--radius-md);font-size:var(--fs-sm);background:var(--abiha-black);color:#fff;box-shadow:var(--shadow-md)}
+.toast--error{background:#fff;color:var(--danger);border:1px solid var(--danger)}
+.toast a{color:var(--abiha-champagne);font-weight:var(--fw-semibold);text-decoration:underline;white-space:nowrap}
+.toast--error a{color:var(--danger)}
+.toast button{margin-left:auto;opacity:.75;display:grid;place-content:center;width:28px;height:28px;border-radius:var(--radius-sm)}
+.toast button:hover{opacity:1}
+.toast-bar{height:2px;background:currentColor;opacity:.35;transform-origin:left;position:absolute;left:0;right:0;bottom:0;border-radius:0 0 var(--radius-md) var(--radius-md)}
+@media (prefers-reduced-motion:no-preference){
+  .toast-bar{animation:toast-run var(--toast-ms,4500ms) linear forwards}
+  .toast:hover .toast-bar,.toast:focus-within .toast-bar{animation-play-state:paused}
+}
+@keyframes toast-run{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* ---------- Empty states ---------- */
+.empty{display:grid;justify-items:center;text-align:center;gap:var(--sp-3);padding:var(--sp-16) var(--sp-4)}
+.empty__icon{display:grid;place-content:center;place-items:center;width:72px;height:72px;border-radius:50%;background:var(--abiha-ivory);color:var(--grey-text)}
+.empty__icon svg{width:30px;height:30px}
+.empty h2,.empty h3{margin:0;font-size:var(--fs-xl)}
+.empty p{margin:0;color:var(--text-secondary);max-width:42ch}
+.empty--compact{padding:var(--sp-8) var(--sp-4)}
+.empty--compact .empty__icon{width:52px;height:52px}
+.empty--compact .empty__icon svg{width:22px;height:22px}
+
+/* ---------- Form error summary ---------- */
+.error-summary{border:1px solid var(--danger);background:var(--danger-bg);color:var(--danger);border-radius:var(--radius-md);padding:var(--sp-4) var(--sp-5);font-size:var(--fs-sm)}
+.error-summary:focus{outline:2px solid var(--danger);outline-offset:2px}
+.error-summary ul{margin:var(--sp-2) 0 0;padding-left:1.1rem;list-style:disc}
+.error-summary a{color:inherit;text-decoration:underline}
+.input[aria-invalid="true"],.select[aria-invalid="true"],.textarea[aria-invalid="true"]{border-color:var(--danger);box-shadow:0 0 0 1px var(--danger)}
+.error-text::before{content:"";display:inline-block;width:.9em;height:.9em;margin-right:.35em;vertical-align:-.1em;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* ---------- Reduced motion: remove every remaining transition/animation, keep state changes instant ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .js [data-reveal]{opacity:1!important;transform:none!important}
+  .product-card:hover .product-card__media img{transform:none}
+}

@@ -1,0 +1,102 @@
+/*
+ * Home page: a clean boutique layout (big banner, tiles, carousels, shop-the-look). Flat brand colours only: no gradients,
+ * no glass. Only the home page uses these classes.
+ */
+
+/* Section headings are centred, with a short gold rule. */
+.home-head{text-align:center;margin-bottom:var(--sp-8)}
+.home-head h2{margin:var(--sp-1) 0 0}
+.home-head .gold-rule{margin:var(--sp-4) auto 0}
+.home-head p:not(.eyebrow){margin:var(--sp-3) auto 0;max-width:56ch;color:var(--text-secondary)}
+
+/* Buttons */
+.home-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 32px;border:1px solid var(--abiha-black);background:var(--abiha-black);color:#fff;font-family:var(--font-display);font-weight:var(--fw-bold);letter-spacing:var(--ls-wide);text-transform:uppercase;font-size:var(--fs-sm);text-decoration:none;border-radius:var(--radius-sm);transition:background .2s,color .2s,border-color .2s}
+.home-btn:hover{background:var(--abiha-gold);border-color:var(--abiha-gold);color:var(--abiha-black)}
+.home-btn--light{background:#fff;border-color:#fff;color:var(--abiha-black)}
+.home-btn--light:hover{background:var(--abiha-gold);border-color:var(--abiha-gold)}
+.home-btn--outline{background:transparent;color:var(--abiha-black)}
+.home-btn--outline:hover{background:var(--abiha-black);border-color:var(--abiha-black);color:#fff}
+
+/* Tabs above a product row */
+.home-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--sp-2) var(--sp-6);margin-bottom:var(--sp-8)}
+.home-tab{background:none;border:0;border-bottom:2px solid transparent;padding:var(--sp-2) 0;font-family:var(--font-display);font-weight:var(--fw-bold);letter-spacing:var(--ls-wide);text-transform:uppercase;font-size:var(--fs-sm);color:var(--text-secondary);cursor:pointer}
+.home-tab:hover{color:var(--abiha-black)}
+.home-tab[aria-selected="true"]{color:var(--abiha-black);border-bottom-color:var(--abiha-gold)}
+
+/* Round arrow buttons for carousels */
+.home-arrow{display:grid;place-content:center;width:44px;height:44px;border-radius:50%;background:#fff;color:var(--abiha-black);border:1px solid var(--abiha-border);box-shadow:var(--shadow-sm);cursor:pointer;transition:background .2s,color .2s,opacity .2s}
+.home-arrow:hover{background:var(--abiha-black);color:#fff}
+.home-arrow:disabled{opacity:0;pointer-events:none}
+
+/* Category tiles */
+.home-tile{display:block;text-decoration:none;color:inherit}
+.home-tile__img{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--abiha-ivory);border:1px solid var(--abiha-border)}
+.home-tile__img img{width:100%;height:100%;object-fit:contain;transition:transform .7s}
+.home-tile:hover .home-tile__img img{transform:scale(1.05)}
+
+/* Shop the look */
+.home-look{position:relative;display:block;aspect-ratio:3/4;overflow:hidden;background:var(--abiha-ivory);border:1px solid var(--abiha-border);text-decoration:none;color:inherit}
+.home-look>img,.home-look>picture,.home-look>picture img{width:100%;height:100%;object-fit:contain;background:var(--abiha-ivory)}
+.home-look__bar{position:absolute;inset:auto 0 0 0;display:flex;align-items:center;gap:12px;padding:10px;background:rgba(255,255,255,.96)}
+.home-look__thumb{width:46px;height:56px;flex:none;object-fit:contain;background:var(--abiha-ivory)}
+
+/* Collections / promo / story */
+.home-col{display:block;text-decoration:none;color:inherit}
+.home-col__img{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--abiha-ivory);border:1px solid var(--abiha-border)}
+.home-col__img img{width:100%;height:100%;object-fit:contain;transition:transform .7s}
+.home-col:hover .home-col__img img{transform:scale(1.05)}
+.home-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:16px;padding-block:22px;border-block:1px solid var(--abiha-border)}
+.home-stats b{display:block;font-family:var(--font-display);font-size:2.2rem;line-height:1;color:var(--gold-text)}
+.section--grey{background:var(--abiha-ivory)}
+
+/* ---------- hero text card: a professional card with a gold accent bar ---------- */
+.hero-card{position:relative;background:rgba(255,255,255,.95);box-shadow:0 18px 50px rgba(16,16,16,.18);
+    padding:clamp(1.25rem,2.1vw,2.25rem) clamp(1.25rem,2.3vw,2.5rem) clamp(1.4rem,2.3vw,2.4rem) clamp(1.5rem,2.6vw,2.75rem)}
+.hero-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--abiha-gold)}
+.hero-eyebrow{display:flex;align-items:center;gap:.75rem;margin:0 0 clamp(.7rem,1vw,1rem);font-family:var(--font-body);font-size:clamp(.66rem,.72vw,.78rem);font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-text)}
+.hero-eyebrow::before{content:"";flex:none;width:28px;height:2px;background:var(--abiha-gold)}
+.hero-title{margin:0;font-family:var(--font-heading);font-weight:600;line-height:1.05;letter-spacing:-.01em;text-wrap:balance;font-size:clamp(1.9rem,2.5vw,3.3rem)}
+.hero-rule{display:block;width:56px;height:3px;margin:clamp(.9rem,1.3vw,1.3rem) 0;border:0;background:var(--abiha-gold);transform-origin:left center}
+.hero-sub{margin:0 0 clamp(1.1rem,1.7vw,1.7rem);max-width:36ch;font-size:clamp(.95rem,1.02vw,1.12rem);line-height:1.55;color:var(--text-secondary)}
+.hero-card .home-btn{gap:.6rem}
+.hero-card .home-btn svg{transition:transform .2s}
+.hero-card .home-btn:hover svg{transform:translateX(4px)}
+/* the same words on the solid black banner (no picture) */
+.hero-plain .hero-eyebrow{color:var(--abiha-champagne)}
+.hero-plain .hero-title{color:#fff;font-size:clamp(2.2rem,4.4vw,4.2rem)}
+.hero-plain .hero-sub{color:rgba(255,255,255,.85);max-width:46ch}
+
+/* ---------- hero words arrive one after another (only for people who have not asked for less motion) ---------- */
+@keyframes hero-card-in{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+@keyframes hero-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes hero-rule{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:no-preference){
+    .hero-slide.is-active .hero-card{animation:hero-card-in .85s cubic-bezier(.22,.61,.36,1) both}
+    .hero-slide.is-active .hx{animation:hero-up .75s cubic-bezier(.22,.61,.36,1) both;animation-delay:var(--d,0ms)}
+    .hero-slide.is-active .hx-rule{animation:hero-rule .8s cubic-bezier(.22,.61,.36,1) both;animation-delay:var(--d,0ms)}
+}
+
+/* Stacked under the picture (below 1280px): solid white, so the picture does not show through where the card overlaps it. */
+@media (max-width:1279px){.hero-card{background:#fff}}
+
+/* Account sign-up banner: dark rounded card, copy and buttons on the left, four benefit tiles on the right (flat colours). */
+.acct{display:grid;gap:2rem;padding:2rem 1.5rem;background:#101010;color:#fff;border-radius:28px;box-shadow:0 24px 60px rgba(16,16,16,.18)}
+.acct__eyebrow{display:flex;align-items:center;gap:.75rem;margin:0 0 .9rem;font-size:.75rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--abiha-champagne)}
+.acct__eyebrow::before{content:"";width:28px;height:2px;background:var(--abiha-gold)}
+.acct__title{margin:0;color:#fff;font-family:var(--font-heading);font-weight:700;font-size:clamp(2rem,4.2vw,3.25rem);line-height:1.05;text-wrap:balance}
+.acct__text{margin:1rem 0 0;max-width:34rem;font-size:1.0625rem;line-height:1.7;color:rgba(255,255,255,.78)}
+.acct__actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.75rem}
+.acct__btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 2rem;border-radius:999px;font-weight:700;font-size:1rem;text-decoration:none;transition:background .2s,color .2s,border-color .2s,transform .2s}
+.acct__btn--gold{background:var(--abiha-gold);color:#101010;border:1px solid var(--abiha-gold)}
+.acct__btn--gold:hover{background:var(--abiha-champagne);border-color:var(--abiha-champagne);transform:translateY(-2px)}
+.acct__btn--line{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
+.acct__btn--line:hover{border-color:var(--abiha-champagne);color:var(--abiha-champagne)}
+.acct__btn:focus-visible{outline:3px solid var(--abiha-champagne);outline-offset:3px}
+.acct__tiles{display:grid;gap:.9rem;margin:0;padding:0;list-style:none;grid-template-columns:1fr;align-content:center}
+.acct__tile{display:flex;gap:1rem;align-items:flex-start;padding:1.15rem 1.25rem;background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:20px}
+.acct__icon{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:var(--abiha-gold);color:#101010}
+.acct__tile h3{margin:.1rem 0 .25rem;color:#fff;font-family:var(--font-display);font-size:1.0625rem;font-weight:700;line-height:1.3}
+.acct__tile p{margin:0;font-size:.9375rem;line-height:1.5;color:rgba(255,255,255,.7)}
+@media (min-width:640px){.acct{padding:2.5rem 2.25rem}.acct__tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1024px){.acct{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:3rem;padding:3.25rem 3.5rem;align-items:center}}
+@media (max-width:479px){.acct{border-radius:22px}.acct__btn{flex:1 1 40%}}
