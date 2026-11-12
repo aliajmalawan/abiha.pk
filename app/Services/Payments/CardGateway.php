@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payments;
 
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\PaymentTransaction;
-use Illuminate\Http\Request;
+use App\Core\Config;
+use App\Core\Database;
+use App\Core\HttpException;
+use App\Core\Request;
 
 /**
  * Debit/credit card payments through a hosted provider checkout. Provider independent: it works with whatever
- * CardProviderDriver is named in config('payments.card.driver').
+ * CardProviderDriver is named in cfg('payments.card.driver') (.env CARD_PAYMENT_DRIVER).
  *
  * With no driver or no credentials it is DISABLED: it is not offered at checkout, cannot be switched on, and the
- * admin screen lists exactly what is missing. It never pretends a payment happened.
+ * admin screen lists exactly what is missing (missing()). It never pretends a payment happened.
  */
 class CardGateway implements OnlinePaymentGateway
 {
@@ -40,41 +42,45 @@ class CardGateway implements OnlinePaymentGateway
     public function missing(): array
     {
         $missing = [];
-        $driver = config('payments.card.driver');
-        if (! is_string($driver) || $driver === '' || ! class_exists($driver) || ! is_subclass_of($driver, CardProviderDriver::class)) {
+        $driver = Config::get('payments.card.driver');
+        if (!is_string($driver) || $driver === '' || !class_exists($driver) || !is_subclass_of($driver, CardProviderDriver::class)) {
             $missing[] = 'A provider driver (CARD_PAYMENT_DRIVER) that implements App\Services\Payments\CardProviderDriver';
         }
         foreach (['key' => 'CARD_API_KEY', 'secret' => 'CARD_API_SECRET', 'webhook_secret' => 'CARD_WEBHOOK_SECRET'] as $k => $env) {
-            if (trim((string) config("payments.card.$k")) === '') {
+            if (trim((string) Config::get("payments.card.$k")) === '') {
                 $missing[] = $env;
             }
         }
-
         return $missing;
     }
 
     public function driver(): ?CardProviderDriver
     {
-        $class = config('payments.card.driver');
-
-        return is_string($class) && $class !== '' && class_exists($class) && is_subclass_of($class, CardProviderDriver::class) ? app($class) : null;
+        $class = Config::get('payments.card.driver');
+        return is_string($class) && $class !== '' && class_exists($class) && is_subclass_of($class, CardProviderDriver::class) ? new $class() : null;
     }
 
     /** Create the hosted checkout, remember the provider's transaction reference, and return the URL to send the customer to. */
-    public function initiate(Order $order): string
+    public function initiate(array $order): string
     {
         $driver = $this->driver();
-        abort_unless($driver && $this->missing() === [], 503);
-
-        $checkout = $driver->createCheckout($order, route('order.confirmation', ['order' => $order, 'token' => $order->access_token]));
+        if (!$driver || $this->missing() !== []) {
+            throw new HttpException(503);
+        }
+        $checkout = $driver->createCheckout($order, route('order.confirmation', ['number' => $order['number'], 'token' => $order['access_token']]));
 
         // A pending record with the provider's reference. The order is NOT paid until the verified webhook says so.
-        $payment = Payment::updateOrCreate(
-            ['provider' => 'card', 'reference' => $checkout->reference],
-            ['order_id' => $order->id, 'amount' => $order->total, 'status' => 'pending'],
-        );
-        PaymentTransaction::record($order, 'card', 'initiated', 'pending', $checkout->reference, (int) $order->total, $payment);
-        $order->update(['payment_status' => 'pending']);
+        $db = Database::get();
+        $existing = $db->one("SELECT id FROM payments WHERE provider = 'card' AND reference = ?", [$checkout->reference]);
+        if ($existing) {
+            $db->exec("UPDATE payments SET order_id = ?, amount = ?, status = 'pending', updated_at = ? WHERE id = ?", [(int) $order['id'], (int) $order['total'], now(), $existing['id']]);
+            $paymentId = (int) $existing['id'];
+        } else {
+            $paymentId = $db->insert("INSERT INTO payments (order_id, provider, reference, status, amount, created_at, updated_at) VALUES (?, 'card', ?, 'pending', ?, ?, ?)",
+                [(int) $order['id'], $checkout->reference, (int) $order['total'], now(), now()]);
+        }
+        PaymentService::record($order, 'card', 'initiated', 'pending', $checkout->reference, (int) $order['total'], $paymentId);
+        $db->exec("UPDATE orders SET payment_status = 'pending', updated_at = ? WHERE id = ?", [now(), (int) $order['id']]);
 
         return $checkout->url;
     }
@@ -82,10 +88,9 @@ class CardGateway implements OnlinePaymentGateway
     public function handleWebhook(Request $request): ?VerifiedPayment
     {
         $driver = $this->driver();
-        if (! $driver || $this->missing() !== []) {
+        if (!$driver || $this->missing() !== []) {
             return null;                                   // not configured: nothing can be verified
         }
-
         return $driver->parseWebhook($request);
     }
 }

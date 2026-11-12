@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payments;
 
 /**
@@ -15,10 +17,10 @@ final class WebhookSignature
     /**
      * Verify an HMAC signature over the RAW request body (never over parsed/re-encoded JSON).
      *
-     * @param  string  $signature  as sent by the provider: hex or base64, with or without an algo prefix like "sha256="
-     * @param  int|null  $timestamp  unix time from the signed payload/header; when given it is part of the signed
-     *                               message ("{timestamp}.{payload}") and must be within $toleranceSeconds, which
-     *                               stops an old captured request from being replayed
+     * @param string   $signature as sent by the provider: hex or base64, with or without an algo prefix like "sha256="
+     * @param int|null $timestamp unix time from the signed payload/header; when given it is part of the signed
+     *                            message ("{timestamp}.{payload}") and must be within $toleranceSeconds, which
+     *                            stops an old captured request from being replayed
      */
     public static function verifyHmac(string $payload, string $signature, string $secret, string $algo = 'sha256', ?int $timestamp = null, int $toleranceSeconds = 300): bool
     {
@@ -29,13 +31,13 @@ final class WebhookSignature
             return false;                                        // too old (replay) or too far in the future (clock tricks)
         }
 
-        $message = $timestamp !== null ? $timestamp.'.'.$payload : $payload;
+        $message = $timestamp !== null ? $timestamp . '.' . $payload : $payload;
         $expected = hash_hmac($algo, $message, $secret, true);
 
-        $signature = preg_replace('/^'.preg_quote($algo, '/').'=/i', '', trim($signature)) ?? '';
+        $signature = preg_replace('/^' . preg_quote($algo, '/') . '=/i', '', trim($signature)) ?? '';
         $candidates = [];
-        if (ctype_xdigit($signature)) {
-            $candidates[] = hex2bin(strlen($signature) % 2 ? '0'.$signature : $signature) ?: '';
+        if ($signature !== '' && ctype_xdigit($signature)) {
+            $candidates[] = hex2bin(strlen($signature) % 2 ? '0' . $signature : $signature) ?: '';
         }
         $b64 = base64_decode($signature, true);
         if ($b64 !== false) {
@@ -47,7 +49,6 @@ final class WebhookSignature
                 return true;
             }
         }
-
         return false;
     }
 }

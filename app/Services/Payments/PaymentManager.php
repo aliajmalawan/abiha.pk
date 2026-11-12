@@ -1,47 +1,80 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payments;
 
-use App\Models\Setting;
-use Illuminate\Support\Collection;
+use App\Core\Config;
+use App\Support\Settings;
 
-class PaymentManager
+/**
+ * The payment gateways (cfg('payments.gateways'): code => class). Port of the old PaymentManager.
+ *
+ *   PaymentManager::enabledCodes()   codes the admin switched on (setting payments.enabled, else cfg('payments.enabled'))
+ *   PaymentManager::enabled()        [code => PaymentGateway] enabled AND available (what checkout offers)
+ *   PaymentManager::all()            [code => PaymentGateway] every registered gateway (admin screen)
+ *   PaymentManager::find('cod')      enabled+available gateway or null
+ *   PaymentManager::online('card')   OnlinePaymentGateway regardless of "enabled" (webhooks keep working after disabling)
+ *   PaymentManager::label('cod')     "Cash on Delivery" (fallback "Bank Transfer"-style title case)
+ */
+final class PaymentManager
 {
-    /** Codes the admin has switched on (Admin → Payments). Falls back to config/.env until first saved. */
-    public function enabledCodes(): array
+    /** @return list<string> */
+    public static function enabledCodes(): array
     {
-        $stored = Setting::get('payments.enabled');
-
-        return array_values(is_array($stored) ? $stored : config('payments.enabled', []));
+        $stored = Settings::get('payments.enabled');
+        return array_values(is_array($stored) ? $stored : (array) Config::get('payments.enabled', []));
     }
 
-    /** @return Collection<string, PaymentGateway> keyed by code, only gateways that are enabled AND available */
-    public function enabled(): Collection
+    /** @return array<string,PaymentGateway> */
+    public static function enabled(): array
     {
-        return collect($this->enabledCodes())
-            ->filter(fn ($code) => isset(config('payments.gateways')[$code]))
-            ->map(fn ($code) => app(config('payments.gateways')[$code]))
-            ->filter(fn (PaymentGateway $g) => $g->isAvailable())
-            ->keyBy(fn (PaymentGateway $g) => $g->code());
+        $out = [];
+        foreach (self::enabledCodes() as $code) {
+            $g = self::make((string) $code);
+            if ($g && $g->isAvailable()) {
+                $out[$g->code()] = $g;
+            }
+        }
+        return $out;
     }
 
-    /** Every registered gateway, enabled or not (admin screen). @return Collection<string, PaymentGateway> */
-    public function all(): Collection
+    /** @return array<string,PaymentGateway> */
+    public static function all(): array
     {
-        return collect(config('payments.gateways'))->map(fn ($class) => app($class))->keyBy(fn (PaymentGateway $g) => $g->code());
+        $out = [];
+        foreach (array_keys((array) Config::get('payments.gateways', [])) as $code) {
+            if ($g = self::make((string) $code)) {
+                $out[$g->code()] = $g;
+            }
+        }
+        return $out;
     }
 
-    public function find(string $code): ?PaymentGateway
+    public static function find(string $code): ?PaymentGateway
     {
-        return $this->enabled()->get($code);
+        return self::enabled()[$code] ?? null;
     }
 
-    /** Online gateway by code regardless of "enabled" (webhooks must still be processed after disabling). */
-    public function online(string $code): ?OnlinePaymentGateway
+    public static function online(string $code): ?OnlinePaymentGateway
     {
-        $class = config('payments.gateways')[$code] ?? null;
-        $gateway = $class ? app($class) : null;
+        $g = self::make($code);
+        return $g instanceof OnlinePaymentGateway ? $g : null;
+    }
 
-        return $gateway instanceof OnlinePaymentGateway ? $gateway : null;
+    public static function label(string $code): string
+    {
+        $g = self::make($code);
+        return $g ? $g->label() : ucwords(str_replace('_', ' ', $code));
+    }
+
+    private static function make(string $code): ?PaymentGateway
+    {
+        $class = ((array) Config::get('payments.gateways', []))[$code] ?? null;
+        if (!is_string($class) || !class_exists($class)) {
+            return null;
+        }
+        $g = new $class();
+        return $g instanceof PaymentGateway ? $g : null;
     }
 }

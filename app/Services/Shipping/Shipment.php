@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Shipping;
 
 /** What a courier returned when a shipment was booked. */

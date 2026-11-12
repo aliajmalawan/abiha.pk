@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
-use App\Models\Setting;
+use App\Auth\Auth;
 
 /**
- * The editable link lists of the storefront (Admin → Menus): the header links next to the "Shop" mega menu, and two footer columns.
- * Until the owner saves a list, the defaults below are used. A saved list is used exactly as saved (an empty list shows no links).
+ * The editable link lists of the storefront (Admin -> Menus): the header links next to the "Shop" mega menu, and two
+ * footer columns (port of the old App\Support\Menus). Until the owner saves a list, the defaults below are used. A saved
+ * list (setting "menu.<key>") is used exactly as saved (an empty list shows no links).
  */
-class Menus
+final class Menus
 {
-    /** @var array<string, string> key => admin label */
+    /** @var array<string,string> key => admin label */
     public const LISTS = [
         'header' => 'Header links (next to Shop)',
         'footer_shop' => 'Footer: Shop column',
@@ -39,8 +42,7 @@ class Menus
     /** @return list<array{label:string,url:string}> the stored (or default) rows, for the admin form */
     public static function rows(string $key): array
     {
-        $saved = Setting::get('menu.'.$key);
-
+        $saved = Settings::get('menu.' . $key);
         return array_values(is_array($saved) ? $saved : (self::DEFAULTS[$key] ?? []));
     }
 
@@ -51,13 +53,12 @@ class Menus
         foreach (self::rows($key) as $row) {
             $label = trim((string) ($row['label'] ?? ''));
             $url = trim((string) ($row['url'] ?? ''));
-            if ($label === '' || ! self::safe($url)) {
+            if ($label === '' || !self::safe($url)) {
                 continue;
             }
-            $target = ($url === '/account' && ! auth()->check()) ? '/login' : $url;      // a visitor who is not signed in goes straight to sign-in
+            $target = ($url === '/account' && !Auth::check()) ? '/login' : $url;   // a visitor who is not signed in goes straight to sign-in
             $out[] = ['label' => $label, 'url' => $url, 'href' => str_starts_with($target, '/') ? url($target) : $target];
         }
-
         return $out;
     }
 

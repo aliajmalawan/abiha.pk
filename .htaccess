@@ -1,25 +1,19 @@
-# Safety net for cPanel when the domain's document root is the project root.
-# Preferred setup: point the domain's document root at /public instead (see docs/ARCHITECTURE.md).
+# ABIHA - project root.
+# Used when the domain's document root is this folder instead of public/: every request is routed into public/.
+# Source code, storage, database files, tests, docs and .env are never served.
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+<FilesMatch "^\.|\.(env|sql|md|log|lock|ini|sh|bak|json|zip)$">
+    Require all denied
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
-
-    # Never serve dotfiles (.env, .git, ...) or framework internals
-    RewriteRule (^|/)\.(?!well-known) - [F,L]
-    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|docs)(/|$) - [F,L]
-    RewriteRule \.(env|lock|md|log)$ - [F,L]
-
-    # Local XAMPP convenience: http://localhost/abiha.pk/  ->  http://localhost/abiha.pk/public/
-    # (the app lives in public/; opened without it, Laravel builds wrong CSS/image URLs and you see an unstyled page).
-    # Only for localhost; on a real domain the internal rewrite below applies and the URL never shows /public.
-    RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
-    RewriteCond %{REQUEST_URI} !/public(/|$)
-    RewriteCond %{REQUEST_URI}::$1 ^(.*?/)(.*)::\2$
-    RewriteRule ^(.*)$ - [E=ABIHA_BASE:%1]
-    RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
-    RewriteCond %{REQUEST_URI} !/public(/|$)
-    RewriteRule ^(.*)$ %{ENV:ABIHA_BASE}public/$1 [R=302,L]
-
-    # Everything else is handled by public/
-    RewriteCond %{REQUEST_URI} !^/public/
+    # (Uploaded images under /storage/... are handled by storage/.htaccess.)
+    # Block direct access to private directories.
+    RewriteRule ^(app|bin|database|storage|tests|docs|resources|backups|live-import)(/|$) - [F,L]
+    # Route everything else into public/.
+    RewriteCond %{REQUEST_URI} !/public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

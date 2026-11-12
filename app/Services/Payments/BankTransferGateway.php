@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payments;
 
-use App\Models\Setting;
+use App\Support\Settings;
 
 class BankTransferGateway implements PaymentGateway
 {
@@ -27,9 +29,9 @@ class BankTransferGateway implements PaymentGateway
         return trim($this->instructions()) !== '';
     }
 
-    /** Account details shown after ordering (edited in admin settings). */
+    /** Account details shown after ordering (setting bank.details, edited in Admin -> Payments). */
     public function instructions(): string
     {
-        return (string) Setting::get('bank.details', '');
+        return (string) Settings::get('bank.details', '');
     }
 }

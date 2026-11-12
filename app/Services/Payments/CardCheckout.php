@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payments;
 
 /** A created hosted-checkout session: where to send the customer, and the provider's transaction reference. */

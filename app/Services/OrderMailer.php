@@ -1,50 +1,120 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Mail\OrderMail;
-use App\Mail\StaffOrderMail;
-use App\Models\Order;
-use App\Models\Setting;
-use Illuminate\Support\Facades\Mail;
+use App\Core\Config;
+use App\Core\Logger;
+use App\Mail\Mailer;
+use App\Services\Payments\BankTransferGateway;
+use App\Services\Payments\PaymentManager;
+use App\Support\Settings;
 
 /**
- * Sends the order emails. Mail is a courtesy on top of the order: any failure (SMTP down, wrong password, bad address) is reported
- * to the log and never stops or undoes an order, a payment or a status change.
+ * The order emails (port of the old OrderMailer + OrderMail/StaffOrderMail). Mail is a courtesy on top of the order:
+ * any failure is logged and never stops or undoes an order, a payment or a status change. Messages go through the
+ * email outbox (Mailer::queue) and are delivered right away when possible (Mailer::flush), else by the cron.
+ *
+ *   OrderMailer::placed($order)   OrderMailer::paid($order)   OrderMailer::statusChanged($order, 'shipped')
+ * $order: an orders row (array) or an order id.
  */
-class OrderMailer
+final class OrderMailer
 {
     /** Statuses that tell the customer something; the quiet internal ones (confirmed, processing) do not send an email. */
-    private const NOTIFY = ['shipped', 'delivered', 'cancelled', 'returned'];
+    public const NOTIFY = ['shipped', 'delivered', 'cancelled', 'returned'];
 
-    public static function placed(Order $order): void
+    public const HEADLINES = [
+        'placed' => ['Order {n} received', 'Thank you. We have received your order.'],
+        'paid' => ['Payment received for order {n}', 'We have received your payment. Thank you.'],
+        'shipped' => ['Your order {n} has shipped', 'Your order is on its way.'],
+        'delivered' => ['Your order {n} was delivered', 'Your order has been marked as delivered.'],
+        'cancelled' => ['Your order {n} was cancelled', 'Your order has been cancelled.'],
+        'returned' => ['Return recorded for order {n}', 'We have recorded the return of your order.'],
+    ];
+
+    public static function placed(array|int $order): void
     {
-        self::send(fn () => Mail::to($order->email)->send(new OrderMail($order, 'placed')));
+        $order = self::fresh($order);
+        if (!$order) {
+            return;
+        }
+        self::send((string) $order['email'], 'order', self::data($order, 'placed'));
+        $notify = Settings::get('mail.notify');
+        if (is_string($notify) && trim($notify) !== '') {
+            self::send(trim($notify), 'staff-order', ['order' => $order, 'adminUrl' => self::adminUrl($order)]);
+        }
+        self::flush();
+    }
 
-        $notify = Setting::get('mail.notify');
-        if ($notify) {
-            self::send(fn () => Mail::to($notify)->send(new StaffOrderMail($order)));
+    public static function paid(array|int $order): void
+    {
+        if ($order = self::fresh($order)) {
+            self::send((string) $order['email'], 'order', self::data($order, 'paid'));
+            self::flush();
         }
     }
 
-    public static function paid(Order $order): void
+    public static function statusChanged(array|int $order, string $status): void
     {
-        self::send(fn () => Mail::to($order->email)->send(new OrderMail($order, 'paid')));
-    }
-
-    public static function statusChanged(Order $order, string $status): void
-    {
-        if (in_array($status, self::NOTIFY, true)) {
-            self::send(fn () => Mail::to($order->email)->send(new OrderMail($order->fresh(), $status)));
+        if (in_array($status, self::NOTIFY, true) && ($order = self::fresh($order))) {
+            self::send((string) $order['email'], 'order', self::data($order, $status));
+            self::flush();
         }
     }
 
-    private static function send(\Closure $send): void
+    /** Template data of emails/order.php (also used by tests to render a message). */
+    public static function data(array $order, string $kind): array
+    {
+        $bank = $order['payment_method'] === 'bank_transfer' && $order['payment_status'] !== 'paid' && $kind === 'placed'
+            ? trim((new BankTransferGateway())->instructions()) : null;
+        return [
+            'order' => $order,
+            'kind' => $kind,
+            'headline' => self::HEADLINES[$kind][1],
+            'subjectLine' => Config::get('abiha.name') . '®: ' . str_replace('{n}', (string) $order['number'], self::HEADLINES[$kind][0]),
+            'orderUrl' => route('order.confirmation', ['number' => $order['number'], 'token' => $order['access_token']]),
+            'bank' => $bank !== '' ? $bank : null,
+            'paymentLabel' => PaymentManager::label((string) $order['payment_method']),
+            'contactEmail' => Settings::get('contact.email'),
+            'contactPhone' => Settings::get('contact.phone'),
+        ];
+    }
+
+    public static function adminUrl(array $order): string
+    {
+        return route_exists('admin.orders.show') ? route('admin.orders.show', ['id' => $order['id'], 'number' => $order['number']]) : url('/admin/orders/' . rawurlencode((string) $order['number']));
+    }
+
+    private static function fresh(array|int $order): ?array
     {
         try {
-            $send();
+            return OrderService::find(is_array($order) ? (int) $order['id'] : $order);
         } catch (\Throwable $e) {
-            report($e);
+            Logger::error('Order email failed', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    private static function send(string $to, string $template, array $data): void
+    {
+        try {
+            if (filter_var($to, FILTER_VALIDATE_EMAIL)) {
+                Mailer::queue($to, $template, $data);
+            }
+        } catch (\Throwable $e) {
+            Logger::error('Order email failed', ['template' => $template, 'error' => $e->getMessage()]);
+        }
+    }
+
+    private static function flush(): void
+    {
+        try {
+            if (!\App\Core\Database::get()->inTransaction()) {
+                Mailer::flush(10);
+            }
+        } catch (\Throwable $e) {
+            Logger::error('Order email delivery failed', ['error' => $e->getMessage()]);
         }
     }
 }

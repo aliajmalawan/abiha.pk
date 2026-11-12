@@ -1,42 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
-use App\Models\Setting;
-use Illuminate\Support\Facades\Storage;
+use App\Core\Config;
 
 /**
- * Applies admin-editable settings on top of config/*.php defaults. Called once per request at boot.
+ * Admin-editable settings on top of the app/Config defaults (port of the old App\Support\SiteSettings).
+ *
+ *   SiteSettings::apply()            once per request (Kernel) and console run: site.name -> abiha.name,
+ *                                    currency.code/currency.symbol -> abiha.currency.*, mail.from_address/from_name -> mail.*
+ *   SiteSettings::asset('site.logo') public URL of an uploaded branding file (logo/favicon), or null = use the supplied artwork
+ *   SiteSettings::logoPath()         stored path of the uploaded logo when the file exists, else null
+ *
  * Safe when the settings table does not exist yet (fresh install / during migrations).
  */
-class SiteSettings
+final class SiteSettings
 {
+    /** @var array<string,mixed> config defaults before apply(), so apply() can run more than once (tests) */
+    private static ?array $defaults = null;
+
     public static function apply(): void
     {
-        try {
-            $name = trim((string) Setting::get('site.name', ''));
-            $code = strtoupper(trim((string) Setting::get('currency.code', '')));
-            $symbol = trim((string) Setting::get('currency.symbol', ''));
-            $fromAddress = Setting::get('mail.from_address');
-            $fromName = Setting::get('mail.from_name');
-        } catch (\Throwable) {
-            return;                                     // table not migrated yet
+        self::$defaults ??= [
+            'abiha.name' => Config::get('abiha.name'),
+            'abiha.currency.code' => Config::get('abiha.currency.code'),
+            'abiha.currency.symbol' => Config::get('abiha.currency.symbol'),
+            'mail.from_address' => Config::get('mail.from_address'),
+            'mail.from_name' => Config::get('mail.from_name'),
+        ];
+        foreach (self::$defaults as $k => $v) {
+            Config::set($k, $v);
         }
-
-        config(array_filter([
-            'abiha.name' => $name ?: null,
-            'abiha.currency.code' => $code ?: null,
-            'abiha.currency.symbol' => $symbol ?: null,
-            'mail.from.address' => $fromAddress ?: null,
-            'mail.from.name' => $fromName ?: null,
-        ], fn ($v) => $v !== null));
+        try {
+            $name = trim((string) Settings::get('site.name', ''));
+            $code = strtoupper(trim((string) Settings::get('currency.code', '')));
+            $symbol = trim((string) Settings::get('currency.symbol', ''));
+            $fromAddress = trim((string) Settings::get('mail.from_address', ''));
+            $fromName = trim((string) Settings::get('mail.from_name', ''));
+        } catch (\Throwable) {
+            return;
+        }
+        $over = array_filter([
+            'abiha.name' => $name,
+            'abiha.currency.code' => $code,
+            'abiha.currency.symbol' => $symbol,
+            'mail.from_address' => $fromAddress,
+            'mail.from_name' => $fromName,
+        ], static fn ($v) => $v !== '');
+        foreach ($over as $k => $v) {
+            Config::set($k, $v);
+        }
     }
 
-    /** Public URL of an uploaded branding file (logo/favicon), or null to use the supplied artwork. */
+    /** Public URL of an uploaded branding file (setting key such as site.logo / site.favicon), or null. */
     public static function asset(string $key): ?string
     {
-        $path = Setting::get($key);
+        $path = Settings::get($key);
+        return is_string($path) && $path !== '' && Img::exists($path) ? Img::url($path) : null;
+    }
 
-        return $path && Storage::disk('public')->exists($path) ? \App\Support\Img::url($path) : null;
+    public static function logoPath(): ?string
+    {
+        $path = Settings::get('site.logo');
+        return is_string($path) && $path !== '' && Img::exists($path) ? $path : null;
     }
 }

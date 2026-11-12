@@ -9,7 +9,7 @@ use DOMNode;
 /**
  * Allow-list HTML sanitizer for admin-authored rich text (product descriptions, CMS pages).
  *
- * Why not strip_tags(): it removes tags but keeps attributes, so <a href="javascript:…" onclick="…"> survives.
+ * Why not strip_tags(): it removes tags but keeps attributes, so <a href="javascript:â€¦" onclick="â€¦"> survives.
  * This parses the markup into a DOM and REBUILDS it from scratch: only allow-listed elements survive, only
  * allow-listed attributes are copied, URLs must use a safe scheme, and dangerous elements are dropped WITH their
  * content. The result is serialised from the DOM, so text is always escaped.
@@ -82,7 +82,7 @@ final class HtmlSanitizer
                 continue;
             }
             if (! isset(self::ALLOWED[$tag])) {
-                self::copyChildren($node, $to, $out);                  // unknown wrapper (div, span, font…): keep its text, lose the tag
+                self::copyChildren($node, $to, $out);                  // unknown wrapper (div, span, fontâ€¦): keep its text, lose the tag
 
                 continue;
             }

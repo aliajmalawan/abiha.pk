@@ -1,13 +1,11 @@
-# ---- Performance: compression + long-lived caching for files whose names change when their content does ----
+# ---- Performance: compression + caching ----
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/xhtml+xml application/javascript text/javascript application/json application/ld+json image/svg+xml font/ttf font/otf
 </IfModule>
 <IfModule mod_headers.c>
-    # Vite output is content-hashed (app-AbC123.js): safe to cache for a year
-    <FilesMatch "^.+\.(js|css|woff2)$">
-        <If "%{REQUEST_URI} =~ m#/build/assets/#">
-            Header set Cache-Control "public, max-age=31536000, immutable"
-        </If>
+    # CSS/JS/fonts carry ?v=<mtime> (asset() helper), fonts have hashed names: a month is safe
+    <FilesMatch "\.(js|css|woff2|svg)$">
+        Header set Cache-Control "public, max-age=2592000"
     </FilesMatch>
     # Uploaded images get a random name and are never edited in place (a replacement is a new file)
     <If "%{REQUEST_URI} =~ m#/storage/.+\.(jpe?g|png|webp|gif|ico)$#i">
@@ -17,6 +15,12 @@
     <If "%{REQUEST_URI} =~ m#/assets/brand/#">
         Header set Cache-Control "public, max-age=2592000"
     </If>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+    AddType image/svg+xml .svg
+    AddType font/woff2 .woff2
 </IfModule>
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
@@ -25,7 +29,7 @@
 
     RewriteEngine On
 
-    # Never serve dotfiles (.env, .git, .htpasswd …) or backup/dump/log files, even if one is dropped into public/
+    # Never serve dotfiles (.env, .git, .htpasswd ...) or backup/dump/log files, even if one is dropped into public/
     RewriteRule (^|/)\.(?!well-known/) - [F,L]
     RewriteRule \.(env|log|sql|sqlite|bak|old|orig|swp|ini|inc|sh|yml|yaml|lock)$ - [F,L,NC]
 
@@ -43,16 +47,7 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Handle X-XSRF-Token Header
-    RewriteCond %{HTTP:x-xsrf-token} .
-    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
-
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
-
-    # Send Requests To Front Controller...
+    # Send requests to the front controller (existing files are served directly)
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]

@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Cart;
 
-use RuntimeException;
-
-/** A user-facing cart problem (out of stock, invalid variant…). Message is safe to display. */
-class CartException extends RuntimeException
+/** A customer-safe problem with the bag, a coupon, checkout or an order action (the message is shown as is). */
+class CartException extends \RuntimeException
 {
 }

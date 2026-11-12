@@ -1,37 +1,152 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
+use App\Core\Config;
 
 /**
- * Responsive image variants for files on the public disk.
+ * Files on the PUBLIC disk (uploads) and their responsive WebP variants, the port of the old App\Support\Img and
+ * <x-picture>.
  *
- * For `products/abc.jpg` we also keep `products/abc-w320.webp`, `-w480`, `-w640` … (only widths smaller than the
- * original). The original stays as the fallback <img>, so a browser without WebP, or an image with no variants yet
- * (uploaded before this existed), still works: nothing here is ever required for a page to render.
+ * The public disk is cfg('filesystems.public_root') = storage/app/public by default, served at
+ * cfg('filesystems.public_url') = APP_URL/storage (public/storage is a symlink/junction to it; hosts without symlinks set
+ * PUBLIC_DISK_ROOT to a folder inside the web root). Paths stored in the database are relative to it, e.g.
+ * "products/Lq7S....jpg", "branding/9lEk....png".
+ *
+ * For "products/abc.jpg" we also keep "products/abc-w320.webp", -w480, -w640 ... (only widths smaller than the original).
+ * The original stays as the <img> fallback, so a browser without WebP, or an image without variants, still works.
+ *
+ *   Img::url($path)                 original, absolute URL with ?v=<mtime> (changes when the file is regenerated)
+ *   Img::src($path, 480)            the smallest WebP variant >= 480 px wide, else the original (helper media())
+ *   Img::srcset($path)              "url 320w, url 480w" of the existing variants, or null (helper media_srcset())
+ *   Img::dimensions($path)          [w, h] or null
+ *   Img::picture($path, $alt, '(min-width: 1024px) 25vw, 50vw', $eager, $priority)   <picture> markup
+ *   Img::generate($path) / Img::delete($path) / Img::exists($path) / Img::path($path) (absolute file path)
  */
-class Img
+final class Img
 {
     public const WIDTHS = [320, 480, 640, 960, 1280, 1600];
     public const QUALITY = 80;
 
-    public static function variantPath(string $path, int $width): string
+    /** @var array<string,array{w:list<int>,d:?array,v:string}> per-request facts about files */
+    private static array $facts = [];
+
+    public static function root(): string
     {
-        return preg_replace('/\.[A-Za-z0-9]+$/', '', $path)."-w{$width}.webp";
+        return (string) Config::get('filesystems.public_root');
     }
 
-    /** Create the WebP variants for an already-stored original. @return int[] widths written */
+    /** Absolute file path on the public disk (rejects "..", backslashes and absolute paths). */
+    public static function path(string $rel): string
+    {
+        $rel = ltrim(str_replace('\\', '/', $rel), '/');
+        if ($rel === '' || str_contains($rel, '..')) {
+            throw new \InvalidArgumentException('Invalid storage path.');
+        }
+        return self::root() . '/' . $rel;
+    }
+
+    public static function exists(?string $rel): bool
+    {
+        if (!$rel) {
+            return false;
+        }
+        try {
+            return is_file(self::path($rel));
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+    }
+
+    public static function variantPath(string $path, int $width): string
+    {
+        return preg_replace('/\.[A-Za-z0-9]+$/', '', $path) . "-w{$width}.webp";
+    }
+
+    /** Public URL of a file on the disk, without version. */
+    public static function publicUrl(string $rel): string
+    {
+        return rtrim((string) Config::get('filesystems.public_url'), '/') . '/' . implode('/', array_map('rawurlencode', explode('/', ltrim($rel, '/'))));
+    }
+
+    /** Original image URL with a version in the query string (browsers cache images for a long time). */
+    public static function url(string $path, ?string $file = null): string
+    {
+        return self::publicUrl($file ?? $path) . '?v=' . self::facts($path)['v'];
+    }
+
+    /** Best URL for about $width CSS pixels: the smallest WebP variant that is at least that wide, else the original. */
+    public static function src(?string $path, ?int $width = null): string
+    {
+        if (!$path) {
+            return '';
+        }
+        if (preg_match('#^(https?:)?//#i', $path)) {
+            return $path;
+        }
+        if ($width !== null) {
+            foreach (self::widths($path) as $w) {
+                if ($w >= $width) {
+                    return self::url($path, self::variantPath($path, $w));
+                }
+            }
+        }
+        return self::url($path);
+    }
+
+    /** @return list<int> widths whose WebP variant exists */
+    public static function widths(string $path): array
+    {
+        return self::facts($path)['w'];
+    }
+
+    public static function srcset(string $path): ?string
+    {
+        $widths = self::widths($path);
+        if ($widths === []) {
+            return null;
+        }
+        // The original stays out of the WebP srcset: it is the <img> fallback for browsers without WebP.
+        return implode(', ', array_map(static fn ($w) => self::url($path, self::variantPath($path, $w)) . ' ' . $w . 'w', $widths));
+    }
+
+    /** @return array{0:int,1:int}|null natural width and height, so the browser can reserve space (no layout shift) */
+    public static function dimensions(string $path): ?array
+    {
+        return self::facts($path)['d'];
+    }
+
+    /**
+     * <picture> with the WebP variants and the original as fallback (port of <x-picture>).
+     *
+     * @param array<string,string> $attrs extra <img> attributes, e.g. ['class' => 'size-full object-cover']
+     */
+    public static function picture(string $path, string $alt = '', string $sizes = '100vw', bool $eager = false, bool $priority = false, array $attrs = []): string
+    {
+        $srcset = self::srcset($path);
+        $dim = self::dimensions($path);
+        $extra = '';
+        foreach ($attrs as $k => $v) {
+            $extra .= ' ' . preg_replace('/[^A-Za-z0-9_:.@-]/', '', (string) $k) . '="' . e($v) . '"';
+        }
+        return '<picture>'
+            . ($srcset ? '<source type="image/webp" srcset="' . e($srcset) . '" sizes="' . e($sizes) . '">' : '')
+            . '<img src="' . e(self::url($path)) . '" alt="' . e($alt) . '"' . ($dim ? ' width="' . $dim[0] . '" height="' . $dim[1] . '"' : '')
+            . ' loading="' . ($eager || $priority ? 'eager' : 'lazy') . '" decoding="async"' . ($priority ? ' fetchpriority="high"' : '') . $extra . '>'
+            . '</picture>';
+    }
+
+    /** Creates the WebP variants of an already-stored original. @return list<int> widths written */
     public static function generate(string $path): array
     {
-        $disk = Storage::disk('public');
         self::forget($path);
-        if (! function_exists('imagewebp') || ! $disk->exists($path)) {
+        if (!function_exists('imagewebp') || !self::exists($path)) {
             return [];
         }
-        $src = @imagecreatefromstring((string) $disk->get($path));
-        if (! $src) {
+        $src = @imagecreatefromstring((string) file_get_contents(self::path($path)));
+        if (!$src) {
             return [];
         }
         imagepalettetotruecolor($src);
@@ -41,48 +156,90 @@ class Img
         $w = imagesx($src);
         $h = imagesy($src);
         $made = [];
-
-        try {
-            foreach (self::WIDTHS as $width) {
-                if ($width >= $w) {
-                    break;                                          // never upscale; the original covers this size
-                }
-                $scaled = self::resample($src, $width, (int) round($h * $width / $w));
-                if (! $scaled) {
-                    continue;
-                }
-                if ($transparent) {
-                    self::clearHaze($scaled);
-                }
-                ob_start();
-                imagewebp($scaled, null, self::QUALITY);
-                $disk->put(self::variantPath($path, $width), (string) ob_get_clean());
+        foreach (self::WIDTHS as $width) {
+            if ($width >= $w) {
+                break;                                          // never upscale; the original covers this size
+            }
+            $scaled = self::resample($src, $width, (int) round($h * $width / $w));
+            if (!$scaled) {
+                continue;
+            }
+            if ($transparent) {
+                self::clearHaze($scaled);
+            }
+            if (imagewebp($scaled, self::path(self::variantPath($path, $width)), self::QUALITY)) {
                 $made[] = $width;
             }
-        } finally {
-            unset($src);
         }
+        // New mtime of the original => new ?v= so browsers drop old (cached) variant files.
+        @touch(self::path($path));
+        clearstatcache();
         self::forget($path);
-        Cache::forever('img.v.'.md5($path), (string) time());   // new URLs, so browsers drop the old (possibly cached) files
-
         return $made;
     }
 
-    /**
-     * Smaller copy of a picture. GD's bicubic imagescale() overshoots on sharp edges (hair, text, a logo outline) and leaves
-     * coloured specks around them in photographs; imagecopyresampled() averages the source pixels and does not. Transparency is kept.
-     */
+    /** Removes an image and every variant of it. */
+    public static function delete(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+        foreach (array_merge([$path], array_map(static fn ($w) => self::variantPath($path, $w), self::WIDTHS)) as $rel) {
+            try {
+                $abs = self::path($rel);
+            } catch (\InvalidArgumentException) {
+                continue;
+            }
+            if (is_file($abs)) {
+                @unlink($abs);
+            }
+        }
+        self::forget($path);
+    }
+
+    public static function forget(?string $path = null): void
+    {
+        if ($path === null) {
+            self::$facts = [];
+        } else {
+            unset(self::$facts[$path]);
+        }
+    }
+
+    /** @return array{w:list<int>,d:?array,v:string} */
+    private static function facts(string $path): array
+    {
+        if (isset(self::$facts[$path])) {
+            return self::$facts[$path];
+        }
+        $widths = [];
+        $dim = null;
+        $v = '0';
+        if (self::exists($path)) {
+            $abs = self::path($path);
+            $v = (string) (filemtime($abs) ?: 0);
+            $info = @getimagesize($abs);
+            $dim = $info ? [(int) $info[0], (int) $info[1]] : null;
+            foreach (self::WIDTHS as $w) {
+                if (is_file(self::path(self::variantPath($path, $w)))) {
+                    $widths[] = $w;
+                }
+            }
+        }
+        return self::$facts[$path] = ['w' => $widths, 'd' => $dim, 'v' => $v];
+    }
+
+    /** Smaller copy; imagecopyresampled averages pixels (no bicubic halos around hair, text or a logo outline). */
     private static function resample(\GdImage $src, int $width, int $height): \GdImage|false
     {
         $dst = imagecreatetruecolor($width, $height);
-        if (! $dst) {
+        if (!$dst) {
             return false;
         }
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
         imagefill($dst, 0, 0, imagecolorallocatealpha($dst, 0, 0, 0, 127));
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $width, $height, imagesx($src), imagesy($src));
-
         return $dst;
     }
 
@@ -96,15 +253,10 @@ class Img
                 }
             }
         }
-
         return false;
     }
 
-    /**
-     * GD's bicubic resize turns fully transparent areas into a faint haze (alpha 123 instead of 127), and lossy WebP keeps it, which
-     * shows as a grey box behind a logo on a white page. After resizing, pixels that are more than ~80% see-through are made fully
-     * transparent again. Only used for pictures that really have transparency.
-     */
+    /** Resizing turns fully transparent areas into a faint haze; pixels more than ~80% see-through become fully transparent. */
     private static function clearHaze(\GdImage $img): void
     {
         $w = imagesx($img);
@@ -112,80 +264,10 @@ class Img
         $clear = imagecolorallocatealpha($img, 0, 0, 0, 127);
         for ($y = 0; $y < $h; $y++) {
             for ($x = 0; $x < $w; $x++) {
-                if (((imagecolorat($img, $x, $y) >> 24) & 127) >= 100) {      // GD alpha: 0 = opaque, 127 = transparent
+                if (((imagecolorat($img, $x, $y) >> 24) & 127) >= 100) {
                     imagesetpixel($img, $x, $y, $clear);
                 }
             }
         }
-    }
-
-    /** Remove an image and every variant of it. */
-    public static function delete(?string $path): void
-    {
-        if (! $path) {
-            return;
-        }
-        $disk = Storage::disk('public');
-        $disk->delete(array_merge([$path], array_map(fn ($w) => self::variantPath($path, $w), self::WIDTHS)));
-        self::forget($path);
-    }
-
-    /** Widths that exist on disk (cached: one filesystem check per image, not per request). @return int[] */
-    public static function widths(string $path): array
-    {
-        return Cache::rememberForever('img.w.'.md5($path), function () use ($path) {
-            $disk = Storage::disk('public');
-
-            return array_values(array_filter(self::WIDTHS, fn ($w) => $disk->exists(self::variantPath($path, $w))));
-        });
-    }
-
-    public static function srcset(string $path): ?string
-    {
-        $widths = self::widths($path);
-        if ($widths === []) {
-            return null;
-        }
-        // The original stays out of the WebP srcset: it is the <img> fallback for browsers without WebP.
-        return implode(', ', array_map(fn ($w) => self::url($path, self::variantPath($path, $w)).' '.$w.'w', $widths));
-    }
-
-    /**
-     * Public URL of an image (or one of its variants) with a version in the query string. Browsers keep image files for a long time,
-     * so when a picture is regenerated in place the URL must change or visitors keep seeing the old one.
-     */
-    public static function url(string $path, ?string $file = null): string
-    {
-        return Storage::disk('public')->url($file ?? $path).'?v='.self::version($path);
-    }
-
-    private static function version(string $path): string
-    {
-        return Cache::rememberForever('img.v.'.md5($path), function () use ($path) {
-            $disk = Storage::disk('public');
-
-            return (string) ($disk->exists($path) ? $disk->lastModified($path) : 0);
-        });
-    }
-
-    /** @return array{0:int,1:int}|null natural width and height, so the browser can reserve space (no layout shift) */
-    public static function dimensions(string $path): ?array
-    {
-        return Cache::rememberForever('img.d.'.md5($path), function () use ($path) {
-            $disk = Storage::disk('public');
-            if (! $disk->exists($path)) {
-                return null;
-            }
-            $info = @getimagesize($disk->path($path));
-
-            return $info ? [(int) $info[0], (int) $info[1]] : null;
-        });
-    }
-
-    private static function forget(string $path): void
-    {
-        Cache::forget('img.w.'.md5($path));
-        Cache::forget('img.d.'.md5($path));
-        Cache::forget('img.v.'.md5($path));
     }
 }

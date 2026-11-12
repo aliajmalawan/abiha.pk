@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payments;
 
-use App\Models\Setting;
+use App\Support\Settings;
 
 class CashOnDeliveryGateway implements PaymentGateway
 {
@@ -16,10 +18,10 @@ class CashOnDeliveryGateway implements PaymentGateway
         return 'Cash on Delivery';
     }
 
-    /** Customer-facing text; editable in Admin → Payments. */
+    /** Customer-facing text; editable in Admin -> Payments (setting cod.note). */
     public function description(): string
     {
-        return (string) (Setting::get('cod.note') ?: 'Pay in cash when your order arrives.');
+        return (string) (Settings::get('cod.note') ?: 'Pay in cash when your order arrives.');
     }
 
     public function isAvailable(): bool

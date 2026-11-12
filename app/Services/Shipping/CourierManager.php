@@ -1,29 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Shipping;
 
-use Illuminate\Support\Collection;
+use App\Core\Config;
 
-/** The couriers registered in config/shipping.php. Empty by default: shipping is managed by hand. */
-class CourierManager
+/** The couriers registered in cfg('shipping.couriers'). Empty by default: shipping is managed by hand. */
+final class CourierManager
 {
-    /** @return Collection<string, CourierProvider> every registered courier, configured or not */
-    public function all(): Collection
+    /** @return array<string,CourierProvider> every registered courier, configured or not */
+    public static function all(): array
     {
-        return collect(config('shipping.couriers', []))
-            ->map(fn ($class) => is_string($class) && class_exists($class) && is_subclass_of($class, CourierProvider::class) ? app($class) : null)
-            ->filter()
-            ->keyBy(fn (CourierProvider $c) => $c->code());
+        $out = [];
+        foreach ((array) Config::get('shipping.couriers', []) as $class) {
+            if (is_string($class) && class_exists($class) && is_subclass_of($class, CourierProvider::class)) {
+                $c = new $class();
+                $out[$c->code()] = $c;
+            }
+        }
+        return $out;
     }
 
-    /** @return Collection<string, CourierProvider> only couriers with working credentials */
-    public function available(): Collection
+    /** @return array<string,CourierProvider> only couriers with working credentials */
+    public static function available(): array
     {
-        return $this->all()->filter(fn (CourierProvider $c) => $c->isConfigured());
+        return array_filter(self::all(), static fn (CourierProvider $c) => $c->isConfigured());
     }
 
-    public function find(?string $code): ?CourierProvider
+    public static function find(?string $code): ?CourierProvider
     {
-        return $code ? $this->available()->get($code) : null;
+        return $code ? (self::available()[$code] ?? null) : null;
     }
 }
