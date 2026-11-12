@@ -18,7 +18,7 @@ $total = $products->total;
         <?php elseif (($category['description'] ?? null) || ($collection['description'] ?? null)): ?><p class="lead"><?= e(($category['description'] ?? null) ?? $collection['description']) ?></p><?php endif; ?>
     </header>
 
-    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-y border-line py-3 mb-8">
+    <div class="shop-toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-y border-line py-3 mb-8">
         <button type="button" class="btn btn--outline btn--sm lg:hidden" @click="filtersOpen = true"><?= icon('sliders-horizontal', 16) ?> Filters <?php if ($activeCount): ?>(<?= (int) $activeCount ?>)<?php endif; ?></button>
         <p class="text-sm muted" role="status"><?= $total ?> <?= $total === 1 ? 'product' : 'products' ?></p>
         <div class="flex items-center gap-2">
@@ -45,11 +45,20 @@ $total = $products->total;
                     <legend class="eyebrow mb-3">Category</legend>
                     <div class="space-y-2">
                         <label class="check"><input type="radio" name="category" value="" <?= !$category ? 'checked' : '' ?>> All</label>
-                        <?php foreach ($categories as $c): ?>
-                            <label class="check"><input type="radio" name="category" value="<?= e($c['slug']) ?>" <?= $catId === (int) $c['id'] ? 'checked' : '' ?>> <?= e($c['name']) ?></label>
-                            <?php foreach ($c['children'] as $child): ?>
-                                <label class="check pl-6"><input type="radio" name="category" value="<?= e($child['slug']) ?>" <?= $catId === (int) $child['id'] ? 'checked' : '' ?>> <span class="text-grey-text"><?= e($child['name']) ?></span></label>
-                            <?php endforeach; ?>
+                        <?php foreach ($categories as $c): $open = $catId === (int) $c['id'] || in_array($catId, array_map(static fn ($k) => (int) $k['id'], $c['children']), true); ?>
+                            <div class="fgroup" x-data="{ open: <?= $open ? 'true' : 'false' ?> }">
+                                <div class="fgroup__head">
+                                    <label class="check"><input type="radio" name="category" value="<?= e($c['slug']) ?>" <?= $catId === (int) $c['id'] ? 'checked' : '' ?>> <?= e($c['name']) ?></label>
+                                    <?php if ($c['children']): ?><button type="button" class="fgroup__toggle" @click="open = !open" :aria-expanded="open" aria-label="Show <?= e($c['name']) ?> categories"><?= icon('chevron-down', 16) ?></button><?php endif; ?>
+                                </div>
+                                <?php if ($c['children']): ?>
+                                    <div class="fgroup__kids" x-show="open" <?= $open ? '' : 'x-cloak' ?>>
+                                        <?php foreach ($c['children'] as $child): ?>
+                                            <label class="check pl-6"><input type="radio" name="category" value="<?= e($child['slug']) ?>" <?= $catId === (int) $child['id'] ? 'checked' : '' ?>> <span class="text-grey-text"><?= e($child['name']) ?></span></label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         <?php endforeach; ?>
                     </div>
                 </fieldset>

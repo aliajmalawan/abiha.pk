@@ -1,13 +1,13 @@
 <section class="section <?= e($toneClass ?? '') ?>">
     <div class="container">
-        <div class="home-head">
+        <div class="home-head" data-reveal>
             <?php if ($section['subtitle']): ?><p class="eyebrow !m-0"><?= e($section['subtitle']) ?></p><?php endif; ?>
             <h2><?= e($section['title']) ?></h2>
             <hr class="gold-rule">
         </div>
-        <div class="grid grid--3 mt-10">
+        <div class="grid grid--3 mt-10" data-reveal-group>
             <?php foreach ($testimonials as $t): ?>
-                <figure class="card !p-8 flex flex-col gap-4 relative">
+                <figure class="card !p-8 flex flex-col gap-4 relative" data-reveal>
                     <span class="absolute right-6 top-3 font-display text-7xl leading-none text-gold/30" aria-hidden="true">&ldquo;</span>
                     <?= App\Core\View::partial('components/stars', ['rating' => (int) $t['rating']]) ?>
                     <blockquote class="text-base leading-relaxed">“<?= e($t['body']) ?>”</blockquote>

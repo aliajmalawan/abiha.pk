@@ -1,0 +1,145 @@
+/* ==========================================================================
+   ABIHA® premium theme layer. Loads AFTER abiha.css and only refines it:
+   the official palette (black, gold, champagne, ivory), the same fonts and
+   the same markup. Flat colour only, warm hairlines, soft shadows, calm
+   motion that is switched off for people who ask for less motion.
+   ========================================================================== */
+
+:root{
+  --abiha-border:#E9E4D8;            /* warmer hairline than the neutral grey */
+  --border:#E9E4D8;
+  --radius-md:6px; --radius-lg:12px;
+  --shadow-xs:0 1px 2px rgba(16,16,16,.04);
+  --shadow-sm:0 4px 14px rgba(16,16,16,.07);
+  --shadow-md:0 14px 36px rgba(16,16,16,.11);
+  --shadow-lg:0 26px 64px rgba(16,16,16,.16);
+  --section-y:clamp(3.5rem,2.4rem + 5vw,7rem);
+  --card-r:14px;
+}
+
+/* ---------- Typography rhythm ---------- */
+h1,h2,h3{letter-spacing:-.01em}
+.home-head{margin-bottom:clamp(2rem,1.5rem + 2vw,3rem)}
+.home-head h2{font-size:clamp(2.15rem,1.55rem + 2.6vw,3.4rem)}
+.home-head .eyebrow{display:inline-flex;align-items:center;gap:.8rem}
+.home-head .eyebrow::before,.home-head .eyebrow::after{content:"";width:26px;height:1px;background:var(--abiha-gold)}
+.home-head .gold-rule{width:56px;height:2px}
+.lead{line-height:1.7}
+
+/* ---------- Top bar + header ---------- */
+.announce{font-size:.72rem;letter-spacing:.12em;padding-block:.55rem}
+header.sticky{border-bottom:1px solid rgba(201,154,53,.38);box-shadow:0 8px 28px rgba(16,16,16,.07)}
+header.sticky>.container{min-height:72px!important}
+.nav-link{letter-spacing:.14em}
+.nav-link::after{content:"";position:absolute;transform:scaleX(0);transform-origin:left center;transition:transform .28s var(--ease)}
+.nav-link:hover::after{transform:scaleX(1)}
+header .btn--ghost{width:44px;height:44px;min-height:44px;padding:0!important;border-radius:50%}
+header .btn--ghost:hover{--bg:#F1ECE0}
+.mega{border-top-width:3px;border-radius:0 0 16px 16px}
+.mega__cat{border-radius:8px}
+.mega__promo{border-radius:14px}
+
+/* ---------- Buttons ---------- */
+.btn,.home-btn{border-radius:6px;letter-spacing:.14em}
+.btn--sm{border-radius:6px}
+.btn--gold:hover{box-shadow:var(--shadow-gold)}
+.home-btn:hover,.btn:not(.btn--ghost):hover{box-shadow:var(--shadow-sm)}
+.btn--ghost{border-radius:8px}
+.link{text-underline-offset:.25em}
+
+/* ---------- Form controls ---------- */
+.input,.select,.textarea{border-radius:8px}
+.input:focus,.select:focus,.textarea:focus{box-shadow:0 0 0 4px rgba(201,154,53,.22)}
+.check input{border-radius:5px}
+.check input[type="radio"]{border-radius:50%}
+.check:hover{color:var(--gold-text)}
+
+/* ---------- Cards ---------- */
+.card{border-radius:var(--card-r);box-shadow:var(--shadow-xs)}
+.card--hover:hover{box-shadow:var(--shadow-md);border-color:var(--abiha-champagne)}
+
+/* ---------- Product card: a soft white card that lifts on hover ---------- */
+.product-card{gap:0;padding-bottom:1rem;border:1px solid var(--border);border-radius:var(--card-r);background:#fff;
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s var(--ease)}
+.product-card:hover,.product-card:focus-within{border-color:var(--abiha-champagne);box-shadow:var(--shadow-md)}
+.product-card__media{border:0;border-radius:calc(var(--card-r) - 1px) calc(var(--card-r) - 1px) 0 0;background:#F8F6F1}
+.product-card__media img{padding:6%}
+.product-card>div:not(.product-card__media){padding:.9rem 1rem 0}
+.product-card__cat{font-size:.68rem;letter-spacing:.14em;color:var(--gold-text)}
+.product-card__title{margin-top:.2rem;font-size:1.2rem}
+.product-card__title a{transition:color .2s}
+.product-card__title a:hover{color:var(--gold-text)}
+.product-card .price{margin-top:.35rem;font-size:1.0625rem}
+.product-card__wish{box-shadow:var(--shadow-sm)}
+.product-card__media .btn--sm{border-radius:8px;box-shadow:var(--shadow-md)}
+.badge{border-radius:999px;padding:4px 12px;letter-spacing:.14em}
+.product-card__badge{top:.85rem;left:.85rem}
+
+/* ---------- Home sections ---------- */
+.hero-card{border-radius:6px;box-shadow:0 24px 64px rgba(16,16,16,.2)}
+.home-tile__img,.home-col__img{border:0;border-radius:var(--card-r);box-shadow:var(--shadow-xs);transition:box-shadow .35s var(--ease),transform .35s var(--ease)}
+.home-tile:hover .home-tile__img,.home-col:hover .home-col__img{box-shadow:var(--shadow-md)}
+.home-tile h3,.home-col h3{transition:color .2s}
+.home-tile:hover h3,.home-col:hover h3{color:var(--gold-text)}
+.home-arrow{width:48px;height:48px;border-color:transparent;box-shadow:var(--shadow-md)}
+.home-arrow:hover{background:var(--abiha-gold);color:var(--abiha-black)}
+.section--ivory .card{border-color:transparent}
+.home-stats b{font-family:var(--font-heading);font-size:2.6rem}
+.acct{box-shadow:var(--shadow-lg)}
+
+/* ---------- Shop: sticky, grouped filters ---------- */
+.shop-toolbar{border-radius:12px;background:var(--abiha-ivory);border:0!important;padding:.65rem 1rem!important}
+@media (min-width:1024px){
+  #filters{position:sticky;top:6.75rem;max-height:calc(100vh - 8rem);overflow-y:auto;padding-right:.75rem;scrollbar-width:thin;scrollbar-color:var(--abiha-champagne) transparent}
+}
+.fgroup{border-bottom:1px solid var(--border)}
+.fgroup:last-child{border-bottom:0}
+.fgroup__head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.3rem 0}
+.fgroup__head .check{flex:1;font-weight:600}
+.fgroup__toggle{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:var(--grey-text);cursor:pointer;transition:background .2s,transform .25s var(--ease)}
+.fgroup__toggle:hover{background:var(--abiha-ivory);color:var(--abiha-black)}
+.fgroup__toggle[aria-expanded="true"]{transform:rotate(180deg)}
+.fgroup__kids{display:grid;gap:.5rem;margin:0 0 .85rem .6rem;padding-left:1.1rem;border-left:1px solid var(--border)}
+.fgroup__kids .check{padding-left:0!important}
+.fgroup__kids .check span{color:var(--text-primary)}
+.filters-apply{box-shadow:none}
+
+/* ---------- Product page ---------- */
+.breadcrumbs a,nav[aria-label="Breadcrumb"] a{transition:color .2s}
+.breadcrumbs a:hover,nav[aria-label="Breadcrumb"] a:hover{color:var(--gold-text)}
+.pdp-media{border-radius:var(--card-r)!important;border:0!important;box-shadow:var(--shadow-sm)}
+.assure{display:grid;gap:.6rem;margin:1.5rem 0 0;padding:1.1rem 1.2rem;list-style:none;background:var(--abiha-ivory);border-radius:12px;font-size:.9rem}
+.assure li{display:flex;align-items:center;gap:.7rem;line-height:1.4}
+.assure svg{flex:none;color:var(--gold-text)}
+.assure a{font-weight:600;text-decoration:underline;text-decoration-color:var(--abiha-gold);text-underline-offset:3px}
+.assure__logos{display:inline-flex;gap:.4rem;margin-left:.4rem}
+.assure__logos .carrier-logo{display:inline-flex;align-items:center;padding:2px 6px;background:#fff;border-radius:6px}
+
+/* ---------- Footer ---------- */
+.footer__col a{transition:color .2s,padding-left .2s var(--ease)}
+.footer__col a:hover{padding-left:.3rem}
+.footer__ship-tile,.carrier-tile{border-radius:10px}
+
+/* ---------- Dialogs / toast ---------- */
+.dialog-surface{border-radius:16px}
+.toast{border-radius:10px}
+
+/* ---------- Motion: only for people who have not asked for less ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .product-card:hover{transform:translateY(-4px)}
+  .home-tile:hover .home-tile__img,.home-col:hover .home-col__img{transform:translateY(-4px)}
+  .btn:not(.btn--ghost):not([disabled]):hover,.home-btn:hover{transform:translateY(-1px)}
+  .btn:active:not([disabled]){transform:translateY(0) scale(.98)}
+}
+@media (hover:none){
+  .product-card:hover{transform:none;box-shadow:var(--shadow-xs)}
+}
+
+/* ---------- Phones ---------- */
+@media (max-width:639px){
+  .announce{font-size:.68rem}
+  header.sticky>.container{min-height:64px!important}
+  .product-card>div:not(.product-card__media){padding:.75rem .8rem 0}
+  .product-card__title{font-size:1.05rem}
+  .home-head h2{font-size:2rem}
+}

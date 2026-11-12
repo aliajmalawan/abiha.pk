@@ -64,6 +64,7 @@ $clientConfig = [
         window.ABIHA = <?= json_encode($clientConfig, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     </script>
     <link rel="stylesheet" href="<?= e(asset('assets/abiha/abiha.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('assets/abiha/theme.css')) ?>">
     <script type="module" src="<?= e(asset('assets/abiha/abiha.js')) ?>"></script>
 </head>
 <body class="min-h-screen flex flex-col">

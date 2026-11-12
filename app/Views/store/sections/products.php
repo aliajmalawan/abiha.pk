@@ -7,7 +7,7 @@ $layout = HomePage::setting($section, 'layout', 'carousel');
 ?>
 <section class="section <?= e($toneClass ?? '') ?>">
     <div class="container">
-        <div class="home-head">
+        <div class="home-head" data-reveal>
             <?php if ($section['subtitle']): ?><p class="eyebrow !m-0"><?= e($section['subtitle']) ?></p><?php endif; ?>
             <h2><?= e($section['title']) ?></h2>
             <hr class="gold-rule">

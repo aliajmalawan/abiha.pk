@@ -31,7 +31,7 @@ $sizeGuide = trim((string) setting('size.guide'));
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-                <div class="order-1 lg:order-2 relative aspect-[4/5] overflow-hidden rounded-lg bg-ivory border border-line"
+                <div class="pdp-media order-1 lg:order-2 relative aspect-[4/5] overflow-hidden rounded-lg bg-ivory border border-line"
                      @mouseenter="zoom = images.length > 0 && window.matchMedia('(hover:hover)').matches" @mouseleave="zoom = false" @mousemove="move($event)" :class="zoom && 'cursor-zoom-in'">
                     <?php if ($imageUrls): ?>
                         <?php /* Rendered by the server (not Alpine) so the main photo is in the HTML for the browser to fetch at once: it is the page's LCP element. */ ?>
@@ -69,6 +69,7 @@ $sizeGuide = trim((string) setting('size.guide'));
             <?php if ($p['short_description']): ?><p class="muted"><?= e($p['short_description']) ?></p><?php endif; ?>
 
             <?= View::partial('store/partials/product-form', ['product' => $p]) ?>
+            <?= View::partial('store/partials/assurance') ?>
 
             <div class="border-t border-line divide-y divide-line" x-data="{ open: 'details' }">
                 <?php foreach ([
