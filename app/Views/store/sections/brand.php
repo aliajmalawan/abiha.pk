@@ -9,8 +9,8 @@ $figures = array_filter($stats, static fn ($n) => $n > 0);
 ?>
 <section class="section <?= e($toneClass ?? '') ?>">
     <div class="container grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div class="relative overflow-hidden bg-ivory border border-line <?= e($main ? '[&_picture]:block' : 'aspect-[5/4]') ?>">
-            <?php if ($main): ?><?= App\Support\Img::picture($main, (string) ($section['title'] ?: ''), '(min-width:1024px) 50vw, 100vw', false, false, ['class' => 'w-full h-auto']) ?><?php else: ?><?= App\Core\View::partial('components/placeholder') ?><?php endif; ?>
+        <div class="story-media <?= $main ? '' : 'story-media--empty' ?>" data-reveal>
+            <?php if ($main): ?><?= App\Support\Img::picture($main, (string) ($section['title'] ?: ''), '(min-width:1024px) 50vw, 100vw', false, false, ['class' => 'story-media__img']) ?><?php else: ?><?= App\Core\View::partial('components/placeholder') ?><?php endif; ?>
         </div>
         <div class="max-w-xl max-lg:text-center max-lg:mx-auto">
             <p class="eyebrow">Our story</p>

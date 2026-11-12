@@ -143,3 +143,14 @@ header .btn--ghost:hover{--bg:#F1ECE0}
   .product-card__title{font-size:1.05rem}
   .home-head h2{font-size:2rem}
 }
+
+/* ---------- Brand story picture: a framed, responsive portrait that always fills its box ---------- */
+.story-media{position:relative;aspect-ratio:4/3;overflow:visible;border-radius:18px;background:var(--abiha-ivory);box-shadow:var(--shadow-lg)}
+.story-media::before{content:"";position:absolute;inset:14px -14px -14px 14px;border:2px solid var(--abiha-gold);border-radius:18px;z-index:0;pointer-events:none}
+.story-media picture,.story-media__img{position:relative;z-index:1;display:block;width:100%;height:100%;border-radius:18px;object-fit:cover;object-position:60% 20%}
+.story-media picture{overflow:hidden}
+.story-media--empty{overflow:hidden}
+.story-media--empty::before{display:none}
+@media (min-width:640px){.story-media{aspect-ratio:1/1}}
+@media (min-width:1024px){.story-media{aspect-ratio:5/4;margin-right:14px}}
+@media (max-width:639px){.story-media{margin-right:14px;margin-bottom:14px}}
