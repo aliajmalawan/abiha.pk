@@ -35,6 +35,8 @@ final class Auth
     private static bool $loaded = false;
     /** Set when the current request found a disabled account (the auth slice shows "This account has been disabled."). */
     private static bool $wasDisabled = false;
+    /** The remember-me cookie this request set (or cleared), for tests and the kernel: [name, value, expires]. */
+    public static ?array $lastRememberCookie = null;
 
     public static function user(): ?array
     {
@@ -42,6 +44,10 @@ final class Auth
             self::$loaded = true;
             self::$user = null;
             $id = Session::get('auth_id');
+            if (!(is_int($id) && $id > 0)) {
+                $id = self::fromRememberCookie();           // "Remember me": a valid cookie signs the user in again
+                self::$loaded = true;                        // login() reset it; this request's user is decided below
+            }
             if (is_int($id) && $id > 0) {
                 $u = self::find($id);
                 $fp = Session::get('auth_pw');
@@ -152,9 +158,71 @@ final class Auth
         self::$wasDisabled = false;
     }
 
+    /**
+     * "Remember me" (Laravel's remember cookie): a 60-character token is stored on the user and in a long-lived
+     * cookie "<session cookie>_remember" holding "id|token". Any request without a session user that carries a
+     * matching cookie is signed in again. Logging out clears both.
+     */
+    public static function remember(array $row): void
+    {
+        $token = bin2hex(random_bytes(30));
+        Database::get()->exec('UPDATE users SET remember_token = ? WHERE id = ?', [$token, $row['id']]);
+        self::setRememberCookie(((int) $row['id']) . '|' . $token, time() + 60 * 60 * 24 * 365 * 5);
+    }
+
+    public static function rememberCookieName(): string
+    {
+        return (string) \App\Core\Config::get('session.cookie', 'abiha_session') . '_remember';
+    }
+
+    private static function setRememberCookie(string $value, int $expires): void
+    {
+        $name = self::rememberCookieName();
+        $https = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== '' && $_SERVER['HTTPS'] !== 'off';
+        if (PHP_SAPI !== 'cli' && !headers_sent()) {
+            setcookie($name, $value, [
+                'expires' => $expires,
+                'path' => (\App\Core\Config::get('base_path') ?: '') . '/',
+                'secure' => $https || \App\Core\Config::isProduction(),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        }
+        if ($expires < time()) {
+            unset($_COOKIE[$name]);
+        } else {
+            $_COOKIE[$name] = $value;
+        }
+        self::$lastRememberCookie = [$name, $value, $expires];
+    }
+
+    /** User id for a valid remember-me cookie, or null. A cookie that does not match is cleared. */
+    private static function fromRememberCookie(): ?int
+    {
+        $raw = $_COOKIE[self::rememberCookieName()] ?? null;
+        if (!is_string($raw) || !preg_match('/^(\d{1,12})\|([a-f0-9]{60})$/', $raw, $m)) {
+            return null;
+        }
+        $u = self::find((int) $m[1]);
+        $stored = (string) ($u['remember_token'] ?? '');
+        if (!$u || $stored === '' || !hash_equals($stored, $m[2]) || (int) $u['is_active'] !== 1 || $u['deleted_at'] !== null) {
+            self::setRememberCookie('', time() - 3600);
+            return null;
+        }
+        self::login($u);                                     // fresh session id + fingerprint, as a normal sign-in
+        return (int) $u['id'];
+    }
+
     /** Signs out: the whole session is cleared and gets a new id and CSRF token (Laravel's logout + invalidate). */
     public static function logout(): void
     {
+        $id = Session::get('auth_id');
+        if (isset($_COOKIE[self::rememberCookieName()])) {
+            if (is_int($id) && $id > 0) {
+                Database::get()->exec('UPDATE users SET remember_token = NULL WHERE id = ?', [$id]);
+            }
+            self::setRememberCookie('', time() - 3600);
+        }
         Session::destroy();
         self::$user = null;
         self::$loaded = true;

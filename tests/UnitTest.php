@@ -70,7 +70,7 @@ T::eq('/abiha.pk/shop', path_url('shop'), 'path_url');
 T::ok(str_starts_with(asset('assets/abiha/abiha.css'), '/abiha.pk/assets/abiha/abiha.css?v='), 'asset() is versioned');
 T::ok(str_starts_with(asset('assets/abiha/abiha.css', true), 'http://localhost/abiha.pk/assets/'), 'asset(..., true) is absolute');
 T::eq('Hello wor...', str_limit('<p>Hello   world again</p>', 9), 'str_limit strips tags and whitespace');
-T::eq('t-shirts-and-polo', slugify('T-Shirts & Polo'), 'slugify') ;
+T::eq('t-shirts-polo', slugify('T-Shirts & Polo'), 'slugify') ;
 T::ok(str_contains(csrf_field(), 'name="_token"') && str_contains(csrf_field(), csrf_token()), 'csrf_field');
 T::eq('<input type="hidden" name="_method" value="PATCH">', method_field('patch'), 'method_field');
 $svg = icon('heart', 18, 'text-gold');

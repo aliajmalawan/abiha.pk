@@ -194,7 +194,8 @@ function slugify(string $s): string
 {
     $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
     $s = mb_strtolower($ascii !== false ? $ascii : $s);
-    $s = (string) preg_replace('/[^a-z0-9\s-]+/', '', str_replace(['@', '&'], ['-at-', '-and-'], $s));
+    // Same result as Laravel's Str::slug: "@" becomes "at", every other symbol (including "&") is dropped.
+    $s = (string) preg_replace('/[^a-z0-9\s-]+/', '', str_replace('@', '-at-', $s));
     $s = (string) preg_replace('/[\s_-]+/', '-', $s);
     return trim($s, '-');
 }

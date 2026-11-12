@@ -38,6 +38,9 @@ final class LoginController extends Controller
 
         RateLimiter::clear($throttleKey, 60);
         Auth::login($row);                              // new session id: prevents session fixation
+        if ($request->bool('remember')) {
+            Auth::remember($row);                       // long-lived cookie, as the old "Remember me" did
+        }
         self::mergeGuestData((int) $row['id']);
 
         // Staff land in the admin area, customers in their account.
