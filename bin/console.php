@@ -11,6 +11,7 @@ declare(strict_types=1);
  *   php bin/console.php admin:create <email> [--name="Administrator"] [--role=admin|manager|staff|...] [--password=...]
  *                                                   Create or promote a staff account (no default password ever)
  *   php bin/console.php cron                        Send queued email, prune old rate-limit counters (run every 5 minutes)
+ *   php bin/console.php mail:test <email>           Send a test email with the current mail settings and show the real error if it fails
  *   php bin/console.php media:optimize [--force]    Make the responsive WebP versions of every stored photo that lacks them (--force: redo all)
  *   php bin/console.php assets:build                One small CSS file (abiha.css + theme.css, minified) and pre-compressed .gz copies of the CSS/JS
  *   php bin/console.php backup                      mysqldump + uploaded photos to storage/backups (keeps 14)
@@ -251,6 +252,24 @@ switch ($cmd) {
                 unlink($old);
             }
         }
+        break;
+
+    case 'mail:test':
+        $to = (string) ($argv[2] ?? '');
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            out('Usage: php bin/console.php mail:test you@example.com');
+            exit(1);
+        }
+        out(sprintf('Sending a test email to %s with driver "%s", from %s%s ...', $to, Config::get('mail.driver'), Config::get('mail.from_address'),
+            Config::get('mail.driver') === 'smtp' ? ' via ' . Config::get('mail.smtp_host') . ':' . Config::get('mail.smtp_port') . ' (' . Config::get('mail.smtp_encryption') . ') as ' . Config::get('mail.smtp_user') : ''));
+        try {
+            App\Mail\Mailer::sendTest($to);
+        } catch (Throwable $e) {
+            out('FAILED: ' . $e->getMessage());
+            out('Check SMTP_HOST (usually mail.yourdomain), SMTP_PORT (465 with SSL, or 587 with TLS), SMTP_USERNAME (the FULL email address) and SMTP_PASSWORD in .env, then run `php bin/console.php cache:clear`.');
+            exit(1);
+        }
+        out(Config::get('mail.driver') === 'smtp' ? 'Sent. Check the inbox (and the spam folder) of ' . $to . '.' : 'Done (driver "' . Config::get('mail.driver') . '": see storage/mail for the message; nothing was delivered).');
         break;
 
     case 'assets:build':

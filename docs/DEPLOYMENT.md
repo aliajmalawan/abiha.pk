@@ -162,3 +162,25 @@ What makes the shop fast, and what to run:
 - **Check it:** outside production every response carries a `Server-Timing` header (time spent in PHP and the number of queries); open the browser's
   Network panel to see it. `php bin/console.php preflight` has a "Speed" section (OPcache, compression, built assets).
 - **Ask the host for:** PHP 8.1+ with **OPcache enabled** (cPanel -> Select PHP Version -> Extensions), HTTPS (AutoSSL) and, if offered, HTTP/2 or HTTP/3.
+
+## 12. Email from your domain (cPanel mailbox)
+
+Order confirmations, password resets and new-order alerts are sent through a mailbox of your own domain, for example `no-reply@abiha.pk`.
+
+1. cPanel -> **Email Accounts** -> Create: `no-reply` @ `abiha.pk`, a long random password (write it down; it goes into `.env` only).
+2. cPanel -> **Email Deliverability**: make sure SPF and DKIM for `abiha.pk` show as valid (press "Repair" if not). This is what keeps the emails out of spam.
+3. In the live `.env`:
+   ```
+   MAIL_DRIVER=smtp
+   MAIL_FROM_ADDRESS=no-reply@abiha.pk
+   MAIL_FROM_NAME="ABIHA"
+   SMTP_HOST=mail.abiha.pk
+   SMTP_PORT=465
+   SMTP_ENCRYPTION=ssl
+   SMTP_USERNAME=no-reply@abiha.pk
+   SMTP_PASSWORD=<the mailbox password>
+   MAIL_ADMIN_NOTIFY=<your own email, where new-order alerts should go>
+   ```
+   (`SMTP_HOST=mail.abiha.pk` has a valid certificate once AutoSSL has run. If cPanel shows another "Outgoing server" under Email Accounts -> Connect Devices, use that name. Port 587 with `SMTP_ENCRYPTION=tls` also works.)
+4. `php bin/console.php cache:clear`, then `php bin/console.php mail:test you@gmail.com`. It prints the real SMTP error if something is wrong, or "Sent": check the inbox and the spam folder.
+5. Admin -> General settings -> Email ("Sender name", "Sender email", "Order notification email") can change these later without touching `.env`.

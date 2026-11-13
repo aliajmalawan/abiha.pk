@@ -44,6 +44,13 @@ final class Mailer
         }
     }
 
+    /** Sends the test email immediately and LETS THE ERROR THROUGH (used by `mail:test`, so the real SMTP message is visible). */
+    public static function sendTest(string $to): void
+    {
+        [$subject, $html, $text] = self::render('test', []);
+        self::deliver($to, $subject, $html, $text);
+    }
+
     /** Queues a rendered email (safe to call inside a DB transaction). */
     public static function queue(string $to, string $template, array $data): void
     {
