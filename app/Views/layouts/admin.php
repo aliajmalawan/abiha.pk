@@ -13,7 +13,7 @@ use App\Core\Security;
 
 $user = Auth::user();
 $groups = [
-    'Overview' => [['admin.dashboard', 'Dashboard', 'layout-dashboard', 'dashboard.view'], ['admin.reports.index', 'Reports', 'chart-column', 'reports.view']],
+    'Overview' => [['admin.dashboard', 'Dashboard', 'layout-dashboard', 'dashboard.view'], ['admin.analytics.index', 'Analytics', 'users', 'reports.view'], ['admin.reports.index', 'Reports', 'chart-column', 'reports.view']],
     'Catalogue' => [
         ['admin.products.index', 'Products', 'package', 'products.manage'], ['admin.categories.index', 'Categories', 'tag', 'categories.manage'],
         ['admin.collections.index', 'Collections', 'tag', 'categories.manage'], ['admin.attributes.index', 'Attributes', 'sliders-horizontal', 'products.manage'],
@@ -34,7 +34,7 @@ $groups = [
         ['admin.messages.index', 'Messages', 'mail', 'messages.manage'],
     ],
     'Website' => [
-        ['admin.home.index', 'Homepage', 'house', 'content.manage'], ['admin.pages.index', 'Pages', 'pencil', 'content.manage'],
+        ['admin.content', 'Content overview', 'check', 'content.manage'], ['admin.home.index', 'Homepage', 'house', 'content.manage'], ['admin.pages.index', 'Pages', 'pencil', 'content.manage'], ['admin.faq.edit', 'FAQ', 'info', 'content.manage'],
         ['admin.testimonials.index', 'Testimonials', 'star', 'content.manage'], ['admin.menus.edit', 'Menus', 'menu', 'content.manage'],
     ],
     'System' => [
@@ -62,8 +62,14 @@ $flashError = flash('error');
     <title><?= e($title ?? 'Admin') ?> | ABIHA® Admin</title>
     <link rel="icon" type="image/png" sizes="32x32" href="<?= e(asset('assets/brand/favicon-32.png')) ?>">
     <script nonce="<?= e(Security::nonce()) ?>">window.ABIHA = {currency: 'PKR', cartCount: 0, wishlistIds: []};</script>
+    <?php if (App\Support\Assets::builtCss()): ?>
+    <link rel="stylesheet" href="<?= e(asset('assets/abiha/app.min.css')) ?>">
+    <?php else: ?>
     <link rel="stylesheet" href="<?= e(asset('assets/abiha/abiha.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('assets/abiha/theme.css')) ?>">
+    <?php endif; ?>
     <script type="module" src="<?= e(asset('assets/abiha/abiha.js')) ?>"></script>
+    <script src="<?= e(asset('assets/abiha/editor.js')) ?>" defer></script>
     <?= $headExtra ?? '' ?>
 </head>
 <body class="min-h-screen bg-ivory" x-data="{ nav: false }" @keydown.escape.window="nav = false">

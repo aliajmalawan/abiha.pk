@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\Admin\ActivityLogController;
+use App\Controllers\Admin\AnalyticsController;
 use App\Controllers\Admin\AdminLoginController;
 use App\Controllers\Admin\ContactMessageController;
 use App\Controllers\Admin\CouponController;
@@ -59,6 +60,10 @@ $router->delete('/admin/shipping-rules/{id:\d+}', [ShippingRuleController::class
 
 // reports.view
 $router->get('/admin/reports', [ReportController::class, 'index'], $mw('reports.view'), 'admin.reports.index');
+
+// reports.view: website traffic; settings.manage: switch tracking on/off
+$router->get('/admin/analytics', [AnalyticsController::class, 'index'], $mw('reports.view'), 'admin.analytics.index');
+$router->post('/admin/analytics/tracking', [AnalyticsController::class, 'toggle'], $mw('settings.manage'), 'admin.analytics.toggle');
 
 // customers.manage
 $router->get('/admin/customers', [CustomerController::class, 'index'], $mw('customers.manage'), 'admin.customers.index');

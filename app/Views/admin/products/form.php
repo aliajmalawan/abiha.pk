@@ -70,7 +70,7 @@ $nErr = count($errs);
 
     <div class="space-y-6">
         <?= View::partial('admin/products/form-main', compact('f', 'specRows', 'categories', 'firstMatch')) ?>
-        <?= View::partial('admin/products/form-photos', compact('exists', 'imgData', 'firstMatch')) ?>
+        <?= View::partial('admin/products/form-photos', compact('exists', 'imgData', 'firstMatch', 'product')) ?>
     </div>
 
     <aside class="space-y-6">

@@ -11,6 +11,8 @@ declare(strict_types=1);
  *   php bin/console.php admin:create <email> [--name="Administrator"] [--role=admin|manager|staff|...] [--password=...]
  *                                                   Create or promote a staff account (no default password ever)
  *   php bin/console.php cron                        Send queued email, prune old rate-limit counters (run every 5 minutes)
+ *   php bin/console.php media:optimize [--force]    Make the responsive WebP versions of every stored photo that lacks them (--force: redo all)
+ *   php bin/console.php assets:build                One small CSS file (abiha.css + theme.css, minified) and pre-compressed .gz copies of the CSS/JS
  *   php bin/console.php backup                      mysqldump + uploaded photos to storage/backups (keeps 14)
  *   php bin/console.php preflight                   Can this server run ABIHA? (PHP, extensions, .env, DB, folders, web root)
  *   php bin/console.php storage:link                Create public/storage -> storage/app/public (symlink or Windows junction)
@@ -194,8 +196,8 @@ switch ($cmd) {
     case 'cron':
         $sent = App\Mail\Mailer::flush(50);
         $db->exec('DELETE FROM rate_limits WHERE window_start < ?', [time() - 172800]);
-        // (The old site had no scheduled clean-ups; carts are kept as before.)
-        out("Cron: {$sent} queued emails sent, old rate-limit counters pruned.");
+        $pruned = App\Services\Analytics::prune(400);   // visitor statistics older than 400 days
+        out("Cron: {$sent} queued emails sent, old rate-limit counters pruned, {$pruned} old page views removed.");
         break;
 
     case 'backup':
@@ -249,6 +251,74 @@ switch ($cmd) {
                 unlink($old);
             }
         }
+        break;
+
+    case 'assets:build':
+        // Run after changing public/assets/abiha/theme.css or any script there. The pages use app.min.css only while it is newer
+        // than its sources, so a forgotten build never shows stale styling; the .gz copies are what the web server sends to browsers.
+        $dir = PUBLIC_PATH . '/assets/abiha';
+        $min = static function (string $css): string {
+            $css = (string) preg_replace('#/\*.*?\*/#s', '', $css);                  // comments
+            $css = (string) preg_replace('/\s+/', ' ', $css);                         // whitespace runs
+            $css = (string) preg_replace('/\s*([{};,>])\s*/', '$1', $css);           // around structure
+            $css = (string) preg_replace('/;}/', '}', $css);
+            return trim($css);
+        };
+        $base = (string) file_get_contents($dir . '/abiha.css');
+        $theme = $min((string) file_get_contents($dir . '/theme.css'));
+        file_put_contents($dir . '/app.min.css', $base . "
+" . $theme . "
+");
+        $rows = [];
+        foreach (['app.min.css', 'abiha.js', 'media.js', 'admin-charts.js'] as $f) {
+            $raw = (string) file_get_contents($dir . '/' . $f);
+            file_put_contents($dir . '/' . $f . '.gz', gzencode($raw, 9));
+            $rows[] = sprintf('%s %d KB -> %d KB gzip', $f, round(strlen($raw) / 1024), round(filesize($dir . '/' . $f . '.gz') / 1024));
+        }
+        out('Assets built: ' . implode('; ', $rows) . '.');
+        break;
+
+    case 'media:optimize':
+        // Every photo the shop shows (products, categories, collections, banners, homepage blocks): create the small WebP
+        // versions the pages choose from, so phones download a 30 KB picture instead of the full original.
+        $force = in_array('--force', $argv, true);
+        $paths = [];
+        foreach (['SELECT path FROM product_images', 'SELECT image AS path FROM categories', 'SELECT image AS path FROM collections', 'SELECT image AS path FROM banners'] as $q) {
+            foreach ($db->column($q) as $pth) {
+                $paths[(string) $pth] = true;
+            }
+        }
+        foreach ($db->column("SELECT settings FROM home_sections WHERE settings IS NOT NULL") as $json) {
+            $cfgRow = json_decode((string) $json, true);
+            foreach (array_merge([(string) ($cfgRow['image'] ?? '')], array_map('strval', (array) ($cfgRow['images'] ?? []))) as $pth) {
+                if ($pth !== '') {
+                    $paths[$pth] = true;
+                }
+            }
+        }
+        unset($paths['']);
+        [$done, $skipped, $missing, $before, $after] = [0, 0, 0, 0, 0];
+        foreach (array_keys($paths) as $rel) {
+            if (!App\Support\Img::exists($rel)) {
+                $missing++;
+                continue;
+            }
+            $before += (int) filesize(App\Support\Img::path($rel));
+            if (!$force && App\Support\Img::widths($rel) !== []) {
+                $skipped++;
+                foreach (App\Support\Img::widths($rel) as $w) {
+                    $after += (int) @filesize(App\Support\Img::path(App\Support\Img::variantPath($rel, $w)));
+                }
+                continue;
+            }
+            $made = App\Support\Img::generate($rel);
+            $done++;
+            foreach ($made as $w) {
+                $after += (int) @filesize(App\Support\Img::path(App\Support\Img::variantPath($rel, $w)));
+            }
+        }
+        App\Support\CatalogCache::bump();
+        out(sprintf('Photos checked: %d. Optimised now: %d, already optimised: %d, file missing: %d. Originals %.1f MB, responsive versions %.1f MB.', count($paths), $done, $skipped, $missing, $before / 1048576, $after / 1048576));
         break;
 
     case 'cache:clear':

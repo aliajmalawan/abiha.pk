@@ -193,6 +193,11 @@ final class ProductController extends AdminController
                 $seen[$combo] = true;
             }
         }
+        // optional product video: an uploaded MP4/WebM (checked by its real signature) or a YouTube / Vimeo / .mp4 link
+        $videoFile = $request->file('video_file');
+        foreach (\App\Support\Video::check($videoFile, is_scalar($in['video_url'] ?? null) ? (string) $in['video_url'] : '') ?? [] as $field => $msg) {
+            $errors[$field] ??= $msg;
+        }
         Rules::throwIf($errors);
 
         $data = array_filter($v->validated(), static fn ($k) => !str_contains((string) $k, '.'), ARRAY_FILTER_USE_KEY);
@@ -201,6 +206,9 @@ final class ProductController extends AdminController
         $data['image_alts'] = is_array($in['image_alts'] ?? null) ? $in['image_alts'] : [];
         $data['image_order'] = is_array($in['image_order'] ?? null) ? $in['image_order'] : [];
         $data['remove_images'] = $remove;
+        $data['video_file'] = $videoFile;
+        $data['video_url'] = is_scalar($in['video_url'] ?? null) ? trim((string) $in['video_url']) : null;
+        $data['remove_video'] = !empty($in['remove_video']);
         $variants = [];
         foreach ($rows as $row) {
             $variants[] = [

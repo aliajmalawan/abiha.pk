@@ -41,6 +41,8 @@ final class Security
             "script-src 'self' 'nonce-" . self::nonce() . "' 'unsafe-eval'",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: https:",
+            "media-src 'self' https:",
+            "frame-src https://www.youtube-nocookie.com https://player.vimeo.com",
             "font-src 'self'",
             "connect-src 'self'",
             "frame-ancestors 'self'",

@@ -24,6 +24,8 @@ final class Kernel
 
     public static function handle(Request $request): Response
     {
+        $t0 = microtime(true);
+        Database::$queries = 0;
         Security::resetNonce();
         View::reset();
         \App\Support\Seo::reset();
@@ -52,6 +54,11 @@ final class Kernel
             $response = ErrorHandler::toResponse($e, $request);
         }
         Security::headers($response, $request);
+        if (!Config::isProduction()) {
+            // visible in the browser's network panel: how long the PHP side took and how many queries it ran
+            $response->headers['Server-Timing'] = sprintf('app;dur=%.1f, db;desc="%d queries"', (microtime(true) - $t0) * 1000, Database::$queries);
+        }
+        \App\Services\Analytics::track($request, $response);   // visitor statistics (never throws)
         return $response;
     }
 }

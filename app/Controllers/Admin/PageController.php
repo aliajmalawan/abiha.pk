@@ -19,7 +19,7 @@ final class PageController extends ResourceController
             'fields' => [
                 ['name' => 'title', 'label' => 'Title'],
                 ['name' => 'slug', 'label' => 'URL slug', 'help' => 'Leave blank to generate from the title. Page address: /pages/your-slug'],
-                ['name' => 'body', 'label' => 'Content (HTML allowed: p, h2-h4, ul, ol, li, strong, em, a, br, blockquote)', 'type' => 'textarea', 'rows' => 14],
+                ['name' => 'body', 'label' => 'Content', 'help' => 'Use the buttons above the box for bold, headings, lists and links. Leave it empty on the FAQ and About us pages to show the built-in version.', 'type' => 'textarea', 'rows' => 14, 'rich' => true],
                 ['name' => 'meta_title', 'label' => 'SEO title'],
                 ['name' => 'meta_description', 'label' => 'SEO description', 'type' => 'textarea', 'rows' => 2],
                 ['name' => 'sort_order', 'label' => 'Footer order', 'type' => 'number'],

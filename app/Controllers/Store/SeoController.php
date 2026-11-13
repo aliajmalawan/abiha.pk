@@ -42,6 +42,24 @@ final class SeoController extends Controller
         return new Response($body, 200, ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'public, max-age=3600']);
     }
 
+    /** /site.webmanifest: the name, colours and icons the phone uses when the shop is added to the home screen. */
+    public function manifest(Request $request): Response
+    {
+        $name = (string) cfg('abiha.name');
+        $json = [
+            'name' => $name . '®', 'short_name' => mb_strtoupper((string) strtok($name, ' ')),
+            'description' => 'Premium sportswear and apparel.',
+            'start_url' => path_url('/'), 'scope' => path_url('/'), 'display' => 'standalone',
+            'background_color' => '#F8F6F1', 'theme_color' => '#101010',
+            'icons' => [
+                ['src' => path_url('assets/brand/icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => path_url('assets/brand/icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
+            ],
+        ];
+        return new Response((string) json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), 200,
+            ['Content-Type' => 'application/manifest+json; charset=utf-8', 'Cache-Control' => 'public, max-age=3600']);
+    }
+
     private function build(): string
     {
         $db = Database::get();

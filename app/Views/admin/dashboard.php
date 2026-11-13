@@ -40,6 +40,18 @@ for ($ago = 29; $ago >= 0; $ago--) {
     <div class="stat"><span>Last 30 days</span><b><?= e($cur) ?> <?= $n($last30) ?></b>
         <small class="text-xs <?= ($trend ?? 0) >= 0 ? 'text-success' : 'text-danger' ?>"><?php if ($trend === null): ?>No earlier period to compare <?php else: ?><?= $trend >= 0 ? '▲' : '▼' ?> <?= abs($trend) ?>% vs the previous 30 days <?php endif; ?></small></div>
 </div>
+<?php if (Auth::can('reports.view') && !empty($traffic)): ?>
+<section class="card mt-4 !p-4 flex flex-wrap items-center justify-between gap-4" aria-label="Website traffic">
+    <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
+        <div><p class="eyebrow !m-0">Website traffic</p><p class="text-sm muted !mb-0">Visitors and page views, counted without cookies</p></div>
+        <div><b class="font-display text-2xl"><?= $n($traffic['today']['visitors']) ?></b> <span class="text-sm muted">visitors today</span></div>
+        <div><b class="font-display text-2xl"><?= $n($traffic['week']['visitors']) ?></b> <span class="text-sm muted">visitors in 7 days</span></div>
+        <div><b class="font-display text-2xl"><?= $n($traffic['week']['views']) ?></b> <span class="text-sm muted">page views in 7 days</span></div>
+        <div><b class="font-display text-2xl"><?= $n($traffic['live']) ?></b> <span class="text-sm muted">on the site now</span></div>
+    </div>
+    <a href="<?= e(route('admin.analytics.index')) ?>" class="btn btn--sm btn--outline">Open Analytics</a>
+</section>
+<?php endif; ?>
 <p class="help mt-2">Revenue excludes cancelled and returned orders. "Collected" is the part already marked paid.</p>
 
 <div class="grid gap-6 xl:grid-cols-2 mt-6">

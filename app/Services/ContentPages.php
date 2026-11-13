@@ -98,6 +98,32 @@ final class ContentPages
         return implode($glue, $items) . $final . $last;
     }
 
+    /**
+     * The FAQ text before its {tokens} are filled in: the owner's own questions (Admin -> FAQ, setting faq.groups) when saved,
+     * otherwise the built-in ones from app/Config/faq.php.
+     *
+     * @return array<string, list<array{q:string,a:string}>>
+     */
+    public static function faqSource(): array
+    {
+        $saved = Settings::get('faq.groups');
+        if (is_array($saved) && $saved !== []) {
+            $out = [];
+            foreach ($saved as $g) {
+                $title = trim((string) ($g['title'] ?? ''));
+                foreach ((array) ($g['items'] ?? []) as $i) {
+                    if (trim((string) ($i['q'] ?? '')) !== '') {
+                        $out[$title !== '' ? $title : 'Questions'][] = ['q' => (string) $i['q'], 'a' => (string) ($i['a'] ?? '')];
+                    }
+                }
+            }
+            if ($out !== []) {
+                return $out;
+            }
+        }
+        return (array) Config::get('faq.groups', []);
+    }
+
     /** @return array<string, list<array{q:string,a:string}>> */
     public static function faqGroups(): array
     {
@@ -118,7 +144,7 @@ final class ContentPages
         $links['{email}'] = $email !== '' ? 'Or email <a href="mailto:' . e($email) . '">' . e($email) . '</a>.' : '';
 
         $groups = [];
-        foreach ((array) Config::get('faq.groups', []) as $title => $items) {
+        foreach (self::faqSource() as $title => $items) {
             foreach ($items as $i) {
                 $groups[$title][] = ['q' => $i['q'], 'a' => trim(strtr(e($i['a']), $links))];
             }

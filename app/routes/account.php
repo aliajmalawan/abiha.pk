@@ -21,6 +21,7 @@ use App\Controllers\Store\SeoController;
 /* ---------- Search engines ---------- */
 $router->get('/sitemap.xml', [SeoController::class, 'sitemap'], [], 'sitemap');
 $router->get('/robots.txt', [SeoController::class, 'robots'], [], 'robots');
+$router->get('/site.webmanifest', [SeoController::class, 'manifest'], [], 'manifest');
 
 /* ---------- Content ---------- */
 $router->post('/newsletter', [NewsletterController::class, 'store'], ['throttle:newsletter'], 'newsletter');

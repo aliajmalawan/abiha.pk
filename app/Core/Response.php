@@ -67,8 +67,41 @@ final class Response
         return $this;
     }
 
+    /** Content types worth compressing. */
+    private const COMPRESSIBLE = '#^(text/|application/(json|xml|javascript|manifest\+json)|image/svg\+xml)#i';
+
+    /**
+     * Gzip the body when the browser accepts it, the response is text, it is large enough to matter and nobody has compressed it
+     * yet. Hosts without mod_deflate then still send a 5 to 8 times smaller page; hosts that have it simply skip this
+     * (they leave our Content-Encoding alone).
+     */
+    public function compress(): self
+    {
+        if ($this->file !== null || strlen($this->body) < 1024 || !function_exists('gzencode') || isset($this->headers['Content-Encoding'])) {
+            return $this;
+        }
+        if (!preg_match(self::COMPRESSIBLE, (string) ($this->headers['Content-Type'] ?? ''))) {
+            return $this;
+        }
+        if (!str_contains(strtolower((string) ($_SERVER['HTTP_ACCEPT_ENCODING'] ?? '')), 'gzip') || ini_get('zlib.output_compression')) {
+            return $this;
+        }
+        $gz = gzencode($this->body, 6);
+        if ($gz === false || strlen($gz) >= strlen($this->body)) {
+            return $this;
+        }
+        $this->body = $gz;
+        $this->headers['Content-Encoding'] = 'gzip';
+        $this->headers['Vary'] = isset($this->headers['Vary']) ? $this->headers['Vary'] . ', Accept-Encoding' : 'Accept-Encoding';
+        $this->headers['Content-Length'] = (string) strlen($gz);
+        return $this;
+    }
+
     public function send(): void
     {
+        if (PHP_SAPI !== 'cli') {
+            $this->compress();
+        }
         if (!headers_sent()) {
             http_response_code($this->status);
             foreach ($this->headers as $k => $v) {

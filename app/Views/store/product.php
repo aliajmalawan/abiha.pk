@@ -22,7 +22,7 @@ $sizeGuide = trim((string) setting('size.guide'));
 
     <div class="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
         <?php /* Gallery with hover zoom */ ?>
-        <div x-data="gallery(<?= Js::from($imageUrls) ?>)" class="lg:sticky lg:top-28 self-start">
+        <div x-data="gallery(<?= Js::from($imageUrls) ?>)" data-lightbox="<?= e(json_encode(array_map(static fn ($im) => ['src' => Img::url($im['path']), 'thumb' => Img::src($im['path'], 160), 'alt' => (string) ($im['alt'] ?: $p['name'])], $p['images']), JSON_UNESCAPED_SLASHES)) ?>" class="lg:sticky lg:top-28 self-start">
             <div class="grid gap-3 <?= count($imageUrls) > 1 ? 'lg:grid-cols-[84px_1fr]' : '' ?>">
                 <?php if (count($imageUrls) > 1): ?>
                     <div class="order-2 lg:order-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible" role="tablist" aria-label="Product images">
@@ -51,8 +51,10 @@ $sizeGuide = trim((string) setting('size.guide'));
                         <?= View::partial('components/placeholder') ?>
                     <?php endif; ?>
                     <?php if ($label = $p['badge_label']): ?><span class="badge badge--gold absolute left-3 top-3"><?= e($label) ?></span><?php endif; ?>
+                    <?php if ($imageUrls): ?><button type="button" class="pdp-enlarge" data-lightbox-open aria-label="View photos full screen"><?= icon('maximize', 18) ?></button><?php endif; ?>
                 </div>
             </div>
+            <?= View::partial('store/partials/product-video', ['p' => $p, 'video' => \App\Support\Video::parse($p['video'] ?? null), 'poster' => $p['images'][0]['path'] ?? null]) ?>
         </div>
 
         <?php /* Details */ ?>
@@ -181,3 +183,4 @@ $sizeGuide = trim((string) setting('size.guide'));
         </div>
     </div>
 <?php endif; ?>
+<?php View::share('scripts', (string) View::shared('scripts', '') . '<script type="module" src="' . e(asset('assets/abiha/media.js')) . '"></script>'); ?>

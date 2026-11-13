@@ -121,3 +121,44 @@ Restore: create an empty database, `gunzip -c backup.sql.gz | mysql -u USER -p D
 - `https://your-domain/.env` -> 403/404; `/admin` -> sign-in page; product photos load.
 - Admin -> Settings: contact details, bank details (bank transfer stays hidden at checkout until they are saved),
   "Allow search engines" (pages are `noindex` until the site runs with `APP_ENV=production` and indexing is allowed).
+
+## 9. Traffic analytics (Admin -> Analytics)
+
+The shop counts its own visitors, with no cookies, no IP addresses and no third-party service: one row per page view in
+the table `page_views` (created by `php bin/console.php migrate`, migration `004_analytics`). Staff visits, robots,
+prefetches, background requests and visitors who send "Do Not Track" are never counted. The page is under Admin ->
+Analytics (permission `reports.view`); the on/off switch needs `settings.manage`. The cron job (`php bin/console.php cron`,
+section 7) removes page views older than 400 days. After updating an existing site run `migrate` once, otherwise the
+dashboard simply hides its traffic strip and the Analytics page shows an error.
+
+## 10. Photos and videos (Admin -> Products)
+
+- **Photos:** every upload is re-encoded (metadata stripped), kept at most 2400 px on the long edge, and small WebP versions
+  (320 to 1600 px) are made so phones download a small file. After copying photos by hand (for example moving from the old
+  site) run `php bin/console.php media:optimize` once: it creates the missing small versions for every product, category,
+  collection, banner and homepage photo (`--force` redoes all). Recommended product photo: 1200 x 1500 px.
+- **Product page gallery:** thumbnails, hover zoom on desktop, and a full-screen photo viewer (the enlarge button, or a tap on
+  phones): arrows, swipe, pinch-style double tap, keyboard (Esc, arrow keys, + / - / 0).
+- **Product video (optional):** Admin -> Products -> edit -> Photos card. Paste a YouTube or Vimeo link, a direct https link
+  to an .mp4 / .webm file, or upload an MP4 / WebM file up to 25 MB (checked by its real content, stored as
+  `storage/app/public/videos/<random>.mp4`). Make sure PHP's `upload_max_filesize` and `post_max_size` are at least 26M.
+  YouTube and Vimeo players only load after the visitor presses play (YouTube through youtube-nocookie.com), uploaded videos
+  never autoplay. The security policy allows exactly these sources: `frame-src` YouTube (no-cookie) and Vimeo, `media-src`
+  the shop and https links.
+
+## 11. Speed
+
+What makes the shop fast, and what to run:
+
+- **Compression:** pages and JSON are gzip-compressed by the application itself when the host's Apache does not do it (5 to 8 times smaller:
+  a 120 KB home page is about 15 KB on the wire). CSS and JS are sent from pre-compressed `.gz` copies by `public/.htaccess`.
+- **One small stylesheet:** `php bin/console.php assets:build` merges `abiha.css` and `theme.css` into `app.min.css` (+ `.gz` copies of the CSS and
+  JS files). Run it after every change to `public/assets/abiha/theme.css` or any script there. The pages use `app.min.css` only while it is newer
+  than its sources, so a forgotten build can never show stale styling (it just falls back to the two source files).
+- **Caching:** CSS, JS, fonts and photos are cached by browsers for 30 days (their addresses carry a version, so a change is picked up at once).
+- **Photos:** responsive WebP versions (see section 10); photos below the first screen load lazily; every photo has its size set so nothing jumps.
+- **Visitor counting** is written after the page has been sent, so it never slows a page down.
+- **Database:** every frequent query uses an index; the category menu, settings and the sitemap are cached (`php bin/console.php cache:clear` empties them).
+- **Check it:** outside production every response carries a `Server-Timing` header (time spent in PHP and the number of queries); open the browser's
+  Network panel to see it. `php bin/console.php preflight` has a "Speed" section (OPcache, compression, built assets).
+- **Ask the host for:** PHP 8.1+ with **OPcache enabled** (cPanel -> Select PHP Version -> Extensions), HTTPS (AutoSSL) and, if offered, HTTP/2 or HTTP/3.

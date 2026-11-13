@@ -61,7 +61,7 @@ T::contains('<meta name="csrf-token" content="' . csrf_token() . '">', $b, 'csrf
 T::contains('<title>ABIHA® | Premium Ecommerce</title>', $b, 'default title');
 T::contains('<meta name="robots" content="noindex,nofollow">', $b, 'noindex outside production');
 T::contains('<link rel="canonical" href="http://localhost/abiha.pk">', $b, 'canonical');
-T::contains('assets/abiha/abiha.css?v=', $b, 'stylesheet');
+T::ok(str_contains($b, 'assets/abiha/app.min.css?v=') || str_contains($b, 'assets/abiha/abiha.css?v='), 'stylesheet (the built file, or the two sources when the build is stale)');
 T::contains('<script type="module" src="/abiha.pk/assets/abiha/abiha.js?v=', $b, 'module script');
 T::contains('"cartDrawerUrl":"http://localhost/abiha.pk/cart/drawer"', $b, 'window.ABIHA config');
 T::contains('"currency":"PKR","cartCount":0,"wishlistIds":[]', $b, 'currency, cart count, wishlist ids');

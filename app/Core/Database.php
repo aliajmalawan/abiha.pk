@@ -46,8 +46,12 @@ final class Database
         return $this->m;
     }
 
+    /** Queries run in this request (shown in the Server-Timing header outside production). */
+    public static int $queries = 0;
+
     private function run(string $sql, array $params): mysqli_stmt
     {
+        self::$queries++;
         $stmt = $this->m->prepare($sql);
         if ($params) {
             $types = '';

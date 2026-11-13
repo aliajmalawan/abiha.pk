@@ -34,7 +34,7 @@ $exists = $model !== null;
             <?php else: ?>
                 <label class="label" for="f-<?= e($name) ?>"><?= e($f['label']) ?></label>
                 <?php if ($type === 'textarea'): ?>
-                    <textarea class="textarea" id="f-<?= e($name) ?>" name="<?= e($name) ?>" rows="<?= (int) ($f['rows'] ?? 4) ?>"<?= $err ? ' aria-invalid="true"' : '' ?>><?= e(is_scalar($val) ? $val : '') ?></textarea>
+                    <textarea class="textarea" id="f-<?= e($name) ?>" name="<?= e($name) ?>" rows="<?= (int) ($f['rows'] ?? 4) ?>"<?= !empty($f['rich']) ? ' data-rich' : '' ?><?= $err ? ' aria-invalid="true"' : '' ?>><?= e(is_scalar($val) ? $val : '') ?></textarea>
                 <?php elseif ($type === 'select'): ?>
                     <select class="select" id="f-<?= e($name) ?>" name="<?= e($name) ?>"<?= $err ? ' aria-invalid="true"' : '' ?>>
                         <?php if (isset($f['blank'])): ?><option value=""><?= e($f['blank']) ?></option><?php endif; ?>

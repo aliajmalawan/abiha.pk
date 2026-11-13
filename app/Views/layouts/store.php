@@ -56,6 +56,7 @@ $clientConfig = [
     <link rel="preload" href="<?= e(path_url('assets/abiha/fonts/cormorant-garamond-latin-var-CUoBjw-S.woff2')) ?>" as="font" type="font/woff2" crossorigin>
     <link rel="icon" <?php if (!$favicon): ?>type="image/png" sizes="32x32" <?php endif; ?>href="<?= e($favicon ?? asset('assets/brand/favicon-32.png')) ?>">
     <link rel="apple-touch-icon" href="<?= e($favicon ?? asset('assets/brand/apple-touch-icon.png')) ?>">
+    <link rel="manifest" href="<?= e(route('manifest')) ?>">
     <meta name="theme-color" content="#101010">
     <?= $headExtra ?? '' ?>
     <?= Seo::jsonLd() ?>
@@ -63,8 +64,12 @@ $clientConfig = [
         document.documentElement.classList.add('js');   // lets CSS hide scroll-reveal items only when JS can reveal them
         window.ABIHA = <?= json_encode($clientConfig, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     </script>
+    <?php if (App\Support\Assets::builtCss()): ?>
+    <link rel="stylesheet" href="<?= e(asset('assets/abiha/app.min.css')) ?>">
+    <?php else: ?>
     <link rel="stylesheet" href="<?= e(asset('assets/abiha/abiha.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/abiha/theme.css')) ?>">
+    <?php endif; ?>
     <script type="module" src="<?= e(asset('assets/abiha/abiha.js')) ?>"></script>
 </head>
 <body class="min-h-screen flex flex-col">

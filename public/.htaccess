@@ -8,7 +8,7 @@
         Header set Cache-Control "public, max-age=2592000"
     </FilesMatch>
     # Uploaded images get a random name and are never edited in place (a replacement is a new file)
-    <If "%{REQUEST_URI} =~ m#/storage/.+\.(jpe?g|png|webp|gif|ico)$#i">
+    <If "%{REQUEST_URI} =~ m#/storage/.+\.(jpe?g|png|webp|gif|ico|mp4|webm)$#i">
         Header set Cache-Control "public, max-age=2592000"
     </If>
     # Brand artwork: a month, then revalidate
@@ -17,8 +17,27 @@
     </If>
     Header always set X-Content-Type-Options "nosniff"
 </IfModule>
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js)\.gz$">
+        Header set Content-Encoding gzip
+        Header append Vary Accept-Encoding
+    </FilesMatch>
+    # Versioned (?v=) CSS/JS never changes under the same address
+    <FilesMatch "\.(css|js|css\.gz|js\.gz)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+</IfModule>
 <IfModule mod_mime.c>
+    <FilesMatch "\.css\.gz$">
+        ForceType text/css
+    </FilesMatch>
+    <FilesMatch "\.js\.gz$">
+        ForceType application/javascript
+    </FilesMatch>
+
     AddType image/webp .webp
+    AddType video/mp4 .mp4
+    AddType video/webm .webm
     AddType image/svg+xml .svg
     AddType font/woff2 .woff2
 </IfModule>
@@ -42,6 +61,11 @@
     RewriteCond %{REQUEST_URI} !(^|/)\.well-known/
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Pre-compressed CSS/JS (made by `php bin/console.php assets:build`): send the .gz copy to browsers that accept gzip.
+    RewriteCond %{HTTP:Accept-Encoding} gzip
+    RewriteCond %{REQUEST_FILENAME}.gz -f
+    RewriteRule ^(.+\.(?:css|js))$ $1.gz [L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

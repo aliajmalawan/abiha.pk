@@ -55,6 +55,7 @@ final class DashboardController extends AdminController
         ];
 
         return [
+            'traffic' => \App\Services\Analytics::glance(),
             'stats' => $stats,
             'last30' => $now30,
             'trend' => $prev30 > 0 ? (int) round((($now30 - $prev30) / $prev30) * 100) : null,

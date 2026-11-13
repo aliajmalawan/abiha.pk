@@ -1,13 +1,13 @@
 # storage/ is private (logs, sessions, cache, backups, payment proofs). Nothing here is served...
 # ...except uploaded images when the domain's document root is the PROJECT folder (not public/): then the URL
-# /storage/<path> arrives here and is served from storage/app/public/<path> (the "public" disk). Images only.
+# /storage/<path> arrives here and is served from storage/app/public/<path> (the "public" disk). Images and product videos only.
 Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
-    RewriteRule ^(?!app/public/)(.+\.(?:jpe?g|png|webp|gif|ico))$ app/public/$1 [L,NC]
+    RewriteRule ^(?!app/public/)(.+\.(?:jpe?g|png|webp|gif|ico|mp4|webm))$ app/public/$1 [L,NC]
     RewriteCond %{ENV:REDIRECT_STATUS} !^$
-    RewriteRule ^app/public/.+\.(?:jpe?g|png|webp|gif|ico)$ - [L,NC]
+    RewriteRule ^app/public/.+\.(?:jpe?g|png|webp|gif|ico|mp4|webm)$ - [L,NC]
     RewriteRule ^ - [F]
 </IfModule>
 <IfModule !mod_rewrite.c>

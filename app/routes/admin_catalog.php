@@ -8,6 +8,8 @@ use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\CollectionController;
 use App\Controllers\Admin\DiscountController;
 use App\Controllers\Admin\FeaturedController;
+use App\Controllers\Admin\ContentController;
+use App\Controllers\Admin\FaqController;
 use App\Controllers\Admin\HomeSectionController;
 use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\MenuController;
@@ -70,6 +72,10 @@ $router->patch('/admin/home', [HomeSectionController::class, 'reorder'], $mw('co
 $router->delete('/admin/home/{id:\d+}', [HomeSectionController::class, 'destroy'], $mw('content.manage'), 'admin.home.destroy');
 $router->get('/admin/home/{id:\d+}/edit', [HomeSectionController::class, 'edit'], $mw('content.manage'), 'admin.home.edit');
 $router->put('/admin/home/{id:\d+}', [HomeSectionController::class, 'update'], $mw('content.manage'), 'admin.home.update');
+$router->get('/admin/content', [ContentController::class, 'index'], $mw('content.manage'), 'admin.content');
+$router->get('/admin/faq', [FaqController::class, 'edit'], $mw('content.manage'), 'admin.faq.edit');
+$router->put('/admin/faq', [FaqController::class, 'update'], $mw('content.manage'), 'admin.faq.update');
+$router->post('/admin/faq/reset', [FaqController::class, 'reset'], $mw('content.manage'), 'admin.faq.reset');
 $router->get('/admin/menus', [MenuController::class, 'edit'], $mw('content.manage'), 'admin.menus.edit');
 $router->put('/admin/menus', [MenuController::class, 'update'], $mw('content.manage'), 'admin.menus.update');
 

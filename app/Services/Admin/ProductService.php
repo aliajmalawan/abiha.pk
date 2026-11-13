@@ -8,6 +8,7 @@ use App\Core\Database;
 use App\Services\ActivityLogger;
 use App\Services\ImageStore;
 use App\Support\CatalogCache;
+use App\Support\Video;
 use App\Support\HtmlSanitizer;
 use App\Support\Img;
 
@@ -73,6 +74,7 @@ final class ProductService
             }
 
             self::syncImages($id, (string) $fill['name'], $newImages, $removeImageIds, $imageOrder);
+            self::syncVideo($id, $data);
             foreach ((array) ($data['image_alts'] ?? []) as $imageId => $alt) {
                 // Plain text only; an empty box falls back to the product name so no image is left without alt text.
                 $clean = trim(strip_tags((string) $alt));
@@ -140,6 +142,37 @@ final class ProductService
         foreach ($newImages as $file) {
             $path = ImageStore::store($file, 'products', 'images');      // re-encoded, metadata stripped, random name
             $db->insert('INSERT INTO product_images (product_id, path, alt, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [$productId, $path, $name, ++$order, now(), now()]);
+        }
+    }
+
+    /**
+     * The product's one optional video. A newly uploaded file wins over a link; ticking "Remove" (or emptying the link
+     * field while the product has a link) clears it; an unchanged form leaves it alone. Old uploaded files are deleted.
+     *
+     * @param array<string,mixed> $data
+     */
+    private static function syncVideo(int $productId, array $data): void
+    {
+        $db = Database::get();
+        $old = $db->value('SELECT video FROM products WHERE id = ?', [$productId]);
+        $old = $old !== null ? (string) $old : null;
+        $file = is_array($data['video_file'] ?? null) ? $data['video_file'] : null;
+        $url = array_key_exists('video_url', $data) ? trim((string) $data['video_url']) : null;
+        $new = $old;
+        if (!empty($data['remove_video'])) {
+            $new = null;
+        } elseif ($file !== null) {
+            $new = Video::store($file);
+        } elseif ($url !== null && $url !== '') {
+            $new = $url;
+        } elseif ($url === '' && $old !== null && !Video::isStored($old)) {
+            $new = null;                       // the link box was emptied
+        }
+        if ($new !== $old) {
+            $db->exec('UPDATE products SET video = ?, updated_at = ? WHERE id = ?', [$new, now(), $productId]);
+            if ($old !== null && Video::isStored($old)) {
+                Video::delete($old);
+            }
         }
     }
 

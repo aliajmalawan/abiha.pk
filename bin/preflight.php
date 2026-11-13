@@ -101,5 +101,19 @@ $check($reachable, 'Uploaded images are reachable at /storage', 'public/storage 
 $free = @disk_free_space(BASE_PATH);
 $check($free === false || $free > 200 * 1024 * 1024, 'Disk space is fine', 'Less than 200 MB of disk space is free', true);
 
+$section('Speed');
+$check(extension_loaded('Zend OPcache') && (bool) ini_get('opcache.enable'), 'PHP OPcache is on (pages run 3 to 5 times faster)', 'OPcache is off for PHP: enable it in cPanel -> Select PHP Version -> Extensions (opcache)', true);
+$check(function_exists('gzencode'), 'zlib is available (pages and assets are sent compressed)', 'The zlib extension is missing: pages cannot be compressed', true);
+$assets = PUBLIC_PATH . '/assets/abiha/';
+$srcTime = (int) max((int) @filemtime($assets . 'abiha.css'), (int) @filemtime($assets . 'theme.css'));
+$check(is_file($assets . 'app.min.css') && (int) filemtime($assets . 'app.min.css') >= $srcTime, 'One minified stylesheet is built', 'The stylesheet build is missing or older than theme.css: run `php bin/console.php assets:build`', true);
+$staleGz = [];
+foreach (['app.min.css', 'abiha.js', 'media.js'] as $f) {
+    if (!is_file($assets . $f . '.gz') || filemtime($assets . $f . '.gz') < filemtime($assets . $f)) {
+        $staleGz[] = $f;
+    }
+}
+$check($staleGz === [], 'Pre-compressed CSS/JS copies are up to date', 'Compressed copies are missing or older than their file (' . implode(', ', $staleGz) . '): run `php bin/console.php assets:build`', true);
+
 fwrite(STDOUT, "\n" . ($fails ? "{$fails} failed, {$warns} warning(s). Fix the FAIL lines before going live.\n" : "Ready, {$warns} warning(s).\n"));
 return $fails ? 1 : 0;

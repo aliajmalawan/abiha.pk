@@ -71,7 +71,16 @@ abstract class ResourceController extends AdminController
     public function create(Request $request): Response
     {
         $c = $this->cfg();
-        return $this->adminView('admin/resource/form', ['c' => $c, 'model' => null, 'values' => $c['defaults'], 'selected' => []], 'New ' . strtolower($c['label']));
+        $values = $c['defaults'];
+        foreach (['title', 'slug', 'name'] as $k) {                      // e.g. /admin/pages/create?title=Privacy+policy&slug=privacy-policy
+            if (is_string($request->query[$k] ?? null) && mb_strlen($request->query[$k]) <= 120) {
+                $values[$k] = $request->query[$k];
+            }
+        }
+        if (($request->query['published'] ?? '') === '1') {
+            $values['is_published'] = true;
+        }
+        return $this->adminView('admin/resource/form', ['c' => $c, 'model' => null, 'values' => $values, 'selected' => []], 'New ' . strtolower($c['label']));
     }
 
     public function store(Request $request): Response

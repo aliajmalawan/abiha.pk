@@ -16,8 +16,8 @@ use App\Services\Admin\Form;
         <select class="select" id="category_id" name="category_id"><option value="">None</option>
             <?php foreach ($categories as $c): ?><option value="<?= (int) $c['id'] ?>"<?= (string) $f('category_id') === (string) $c['id'] ? ' selected' : '' ?>><?= $c['parent_id'] ? '— ' : '' ?><?= e($c['name']) ?></option><?php endforeach; ?></select></div>
     <?= Form::field('short_description', 'Short description', $f('short_description')) ?>
-    <div class="field"><label class="label" for="description">Description (HTML: p, ul, li, strong, em, br, h3, h4, a)</label>
-        <textarea class="textarea !min-h-[180px]" id="description" name="description"><?= e(is_scalar($f('description')) ? $f('description') : '') ?></textarea><?php if ($m = error('description')): ?><span class="error-text"><?= e($m) ?></span><?php endif; ?></div>
+    <div class="field"><label class="label" for="description">Description <span class="text-grey-text font-normal text-sm">(use the buttons for bold, lists and links)</span></label>
+        <textarea class="textarea !min-h-[180px]" id="description" name="description" data-rich data-rich-compact><?= e(is_scalar($f('description')) ? $f('description') : '') ?></textarea><?php if ($m = error('description')): ?><span class="error-text"><?= e($m) ?></span><?php endif; ?></div>
 </section>
 
 <section class="card pf-card space-y-4" x-data="{ rows: <?= Form::js($specRows) ?> }">

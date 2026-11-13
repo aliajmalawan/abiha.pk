@@ -1,6 +1,9 @@
 <?php
-/** Product form: Photos card (ordering, alt text, removal, dropzone upload). @var bool $exists @var array $imgData @var callable $firstMatch */
+/** Product form: Photos card (ordering, alt text, removal, dropzone upload) and the optional product video. @var bool $exists @var array $imgData @var callable $firstMatch @var ?array $product */
 use App\Services\Admin\Form;
+use App\Support\Video;
+
+$curVideo = isset($product['video']) && $product['video'] !== null ? Video::parse((string) $product['video']) : null;
 ?>
 <section class="card pf-card space-y-4">
     <div class="pf-card__head"><span class="pf-card__icon"><?= icon('eye', 18) ?></span><div><h2 class="!text-lg !mb-0">Photos</h2><p class="help">The first photo is the main one shown in the shop.</p></div></div>
@@ -53,4 +56,20 @@ use App\Services\Admin\Form;
         </ul>
         <p class="error-text" x-show="tooMany" x-cloak role="alert">Choose at most 12 photos.</p>
         <?php if ($m = error('images')): ?><span class="error-text"><?= e($m) ?></span><?php endif; ?> <?php if ($m = $firstMatch('images.')): ?><span class="error-text"><?= e($m) ?></span><?php endif; ?></div>
+    <div class="field border-t border-line pt-4" x-data="{ pick: '' }">
+        <h3 class="!text-base !mb-1">Product video <span class="text-grey-text text-sm font-normal">(optional)</span></h3>
+        <p class="help">A short clip (a model wearing it, fabric close-up). It appears in the product gallery under the photos. Paste a <strong>YouTube or Vimeo link</strong>, or upload an <strong>MP4 or WebM file up to 25 MB</strong>.</p>
+        <?php if ($curVideo): ?>
+            <p class="text-sm mt-2">Current video: <?php if ($curVideo['type'] === 'file' && Video::isStored((string) $product['video'])): ?><a class="link" href="<?= e($curVideo['src']) ?>" target="_blank" rel="noopener">uploaded file</a><?php else: ?><a class="link" href="<?= e($curVideo['src']) ?>" target="_blank" rel="noopener"><?= e($curVideo['type'] === 'file' ? 'video link' : ucfirst($curVideo['type'])) ?> link</a><?php endif; ?>
+                <label class="check mt-2"><input type="checkbox" name="remove_video" value="1"> Remove this video</label></p>
+        <?php endif; ?>
+        <label class="label mt-3" for="video_url">Video link</label>
+        <input class="input" type="url" id="video_url" name="video_url" maxlength="255" placeholder="https://www.youtube.com/watch?v=..."
+               value="<?= e((string) old('video_url', ($curVideo && !Video::isStored((string) ($product['video'] ?? ''))) ? (string) $product['video'] : '')) ?>">
+        <?php if ($m = error('video_url')): ?><span class="error-text"><?= e($m) ?></span><?php endif; ?>
+        <label class="label mt-3" for="video_file">Or upload a video file</label>
+        <input class="input !pt-2.5" type="file" id="video_file" name="video_file" accept="video/mp4,video/webm">
+        <span class="help">MP4 (H.264) or WebM, up to 25 MB. Uploading a file replaces the current video.</span>
+        <?php if ($m = error('video_file')): ?><span class="error-text"><?= e($m) ?></span><?php endif; ?>
+    </div>
 </section>
