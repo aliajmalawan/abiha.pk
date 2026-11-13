@@ -186,3 +186,16 @@ Order confirmations, password resets and new-order alerts are sent through a mai
    (`SMTP_HOST=mail.abiha.pk` has a valid certificate once AutoSSL has run. If cPanel shows another "Outgoing server" under Email Accounts -> Connect Devices, use that name. Port 587 with `SMTP_ENCRYPTION=tls` also works.)
 4. `php bin/console.php cache:clear`, then `php bin/console.php mail:test you@gmail.com`. It prints the real SMTP error if something is wrong, or "Sent": check the inbox and the spam folder.
 5. Admin -> General settings -> Email ("Sender name", "Sender email", "Order notification email") can change these later without touching `.env`.
+
+## 13. Where the photos live (read this if photos show as broken)
+
+Uploaded photos, logos and videos are stored in **`public/storage/`** (a real folder: `products/`, `banners/`, `branding/`, `home/`, `videos/`),
+and `.env` says so: `PUBLIC_DISK_ROOT=<full path of the project>/public/storage` (for example `/home2/USER/public_html/abiha.pk/public/storage`).
+That folder must also contain the `.htaccess` that stops scripts from running inside it (it is in `media.zip`).
+
+- When the domain's document root is the **project folder**, a request for `/storage/...` first meets the folder `storage/` of the project, whose
+  `storage/.htaccess` hands the request to `public/storage/` (and, for old installs, to `storage/app/public/`). Always upload the release's
+  `storage/.htaccess` together with the code, or photos will answer 404 even though the files are there.
+- When the document root is **`public/`**, the same folder is served directly.
+- A photo address ending in `?v=0` means the website cannot find that file in `PUBLIC_DISK_ROOT`: check the folder and the `.env` line.
+- Moving photos between computers: zip the folders `products`, `banners`, `branding`, `home` (and `.htaccess`) from `public/storage` and extract them in `public/storage` on the other machine.

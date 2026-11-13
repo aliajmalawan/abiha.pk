@@ -79,13 +79,6 @@ final class Request
         return in_array($this->input($key), ['1', 'on', 'true', 'yes', 1, true], true);
     }
 
-    /** @return array<mixed> */
-    public function arr(string $key): array
-    {
-        $v = $this->input($key, []);
-        return is_array($v) ? $v : [];
-    }
-
     public function file(string $key): ?array
     {
         $f = $this->files[$key] ?? null;
@@ -128,11 +121,6 @@ final class Request
     public function body(): string
     {
         return $this->rawBody;
-    }
-
-    public function isPost(): bool
-    {
-        return $this->method === 'POST';
     }
 
     /** Accept: application/json (the front-end's request() helper sends it for every JSON call). */

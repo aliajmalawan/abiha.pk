@@ -134,12 +134,6 @@ final class Session
         return self::store()['_flash_old'][$key] ?? $default;
     }
 
-    public static function reflash(): void
-    {
-        $s = &self::store();
-        $s['_flash_new'] = array_merge($s['_flash_old'] ?? [], $s['_flash_new'] ?? []);
-    }
-
     public static function resetMemory(): void
     {
         self::$memory = [];

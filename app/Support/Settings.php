@@ -71,14 +71,6 @@ final class Settings
         self::flush();
     }
 
-    /** @param array<string,mixed> $values */
-    public static function putMany(array $values): void
-    {
-        foreach ($values as $k => $v) {
-            self::put((string) $k, $v);
-        }
-    }
-
     public static function forget(string $key): void
     {
         Database::get()->exec('DELETE FROM settings WHERE `key` = ?', [$key]);

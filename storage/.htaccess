@@ -4,6 +4,12 @@
 Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    # 1) Photos and videos in public/storage (the normal home of uploads: the same folder every web-root layout serves)
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteCond %{REQUEST_URI} ^(.*)/storage/(.+\.(?:jpe?g|png|webp|gif|ico|mp4|webm))$ [NC]
+    RewriteCond %{DOCUMENT_ROOT}%1/public/storage/%2 -f
+    RewriteRule ^(?!app/public/)(.+)$ ../public/storage/$1 [L]
+    # 2) Older installs that keep uploads in storage/app/public
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^(?!app/public/)(.+\.(?:jpe?g|png|webp|gif|ico|mp4|webm))$ app/public/$1 [L,NC]
     RewriteCond %{ENV:REDIRECT_STATUS} !^$

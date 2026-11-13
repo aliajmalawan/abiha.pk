@@ -75,11 +75,6 @@ final class Paginator
         return count($this->items);
     }
 
-    public function firstItem(): int
-    {
-        return ($this->currentPage - 1) * $this->perPage + 1;
-    }
-
     public function onFirstPage(): bool
     {
         return $this->currentPage <= 1;

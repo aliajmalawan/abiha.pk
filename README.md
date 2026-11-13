@@ -53,8 +53,7 @@ C:\xampp\php\php.exe tests\run.php unit      # one suite (file tests\UnitTest.ph
 | `public/` | Web root: `index.php`, compiled CSS/JS/fonts (`assets/abiha`), icons, brand artwork, `storage` link to uploads |
 | `storage/` | Private: uploads (`app/public`), payment proofs (`app/private`), sessions, cache, logs, mail, backups |
 
-Deployment (cPanel and others): see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The porting rules for developers are in
-[docs/PORTING.md](docs/PORTING.md).
+Deployment (cPanel and others): see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Admin how-to: [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md).
 
 ## Ground rules
 
