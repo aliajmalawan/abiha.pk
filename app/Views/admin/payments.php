@@ -48,7 +48,7 @@ $card = $gateways['card'] ?? null;
         <?php else: ?>
             <p class="text-sm"><span class="badge badge--ivory">Disabled</span> Card payments are switched off because the following is not set up yet:</p>
             <ul class="text-sm list-disc pl-5"><?php foreach (($card && method_exists($card, 'missing') ? $card->missing() : []) as $item): ?><li><?= e($item) ?></li><?php endforeach; ?></ul>
-            <p class="help">Provider keys and secrets are <strong>not stored in the admin</strong>: they go in the server's <code>.env</code> file. Setup steps are in <code>docs/PAYMENTS.md</code>. Until then nothing can be paid by card and no payment is ever simulated.</p>
+            <p class="help">Card payments use <strong>Safepay</strong>. Its keys are <strong>not stored in the admin</strong>: they go in the server's <code>.env</code> file, together with the line <code>CARD_PAYMENT_DRIVER=App\Services\Payments\Drivers\SafepayDriver</code>. Setup steps are in section 14 of <code>docs/DEPLOYMENT.md</code>. Until then nothing can be paid by card and no payment is ever simulated.</p>
         <?php endif; ?>
         <p class="help">Webhook address for your provider's dashboard: <code><?= e(url('/webhooks/payments/card')) ?></code></p>
     </section>

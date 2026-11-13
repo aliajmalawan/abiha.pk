@@ -199,3 +199,27 @@ That folder must also contain the `.htaccess` that stops scripts from running in
 - When the document root is **`public/`**, the same folder is served directly.
 - A photo address ending in `?v=0` means the website cannot find that file in `PUBLIC_DISK_ROOT`: check the folder and the `.env` line.
 - Moving photos between computers: zip the folders `products`, `banners`, `branding`, `home` (and `.htaccess`) from `public/storage` and extract them in `public/storage` on the other machine.
+
+## 14. Debit / Credit Card payments (Safepay)
+
+Customers pay on **Safepay's own page**, so this website never sees or stores a card number. The order is marked paid **only** after Safepay's
+signed notice arrives and the website has asked Safepay to confirm that payment and its amount. The browser coming back is never trusted.
+
+1. Open a Safepay merchant account (getsafepay.com). Start in the **sandbox** (test) dashboard. Sandbox and live have different keys.
+2. In the Safepay dashboard copy the **API key** (public, starts with `sec_`), the **Secret key**, and add a webhook endpoint:
+   `https://abiha.pk/webhooks/payments/card` (the "shared secret" it shows is the webhook secret).
+3. In the live `.env` add:
+   ```
+   PAYMENTS_ENABLED=cod,bank_transfer,card
+   CARD_PAYMENT_DRIVER=App\Services\Payments\Drivers\SafepayDriver
+   CARD_ENVIRONMENT=sandbox
+   CARD_API_KEY=<API key>
+   CARD_API_SECRET=<Secret key>
+   CARD_WEBHOOK_SECRET=<webhook shared secret>
+   ```
+4. `php bin/console.php cache:clear`. Admin -> Payment methods shows "Ready"; tick "Debit / Credit Card" there.
+5. **Test in sandbox first**: place an order, pay with Safepay's test card, and check the order turns "Paid" and "Confirmed" and the customer email arrives.
+   If the order stays unpaid, look at `storage/logs` for "Safepay:" lines and at Safepay's webhook delivery log.
+6. To go live switch to the live dashboard's keys and webhook secret, and set `CARD_ENVIRONMENT=production`.
+
+The amount is sent in the lowest unit (PKR 1,250 = 125000) and always comes from the order in the database. Cash on delivery and bank transfer are unchanged.

@@ -14,7 +14,7 @@ namespace App\Core;
 final class Security
 {
     /** Extra origins allowed as form-action targets (hosted payment pages), e.g. 'https://pay.example'. */
-    public const PAYMENT_FORM_ORIGINS = [];
+    public const PAYMENT_FORM_ORIGINS = ['https://getsafepay.com', 'https://sandbox.api.getsafepay.com'];   // Safepay hosted card page
 
     /** Private/transactional pages: never stored by the browser or a shared cache (back button after logout, proxies). */
     private const NO_STORE = ['#^/admin(/|$)#', '#^/account(/|$)#', '#^/checkout$#', '#^/order/#', '#^/login$#', '#^/register$#',

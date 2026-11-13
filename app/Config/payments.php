@@ -29,6 +29,7 @@ return [
         'key' => env('CARD_API_KEY'),
         'secret' => env('CARD_API_SECRET'),
         'webhook_secret' => env('CARD_WEBHOOK_SECRET'),
+        'environment' => env('CARD_ENVIRONMENT', 'sandbox'),   // sandbox while testing, production when live
     ],
 
     'enabled' => array_values(array_filter(array_map('trim', explode(',', (string) env('PAYMENTS_ENABLED', 'cod,bank_transfer'))))),

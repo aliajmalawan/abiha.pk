@@ -391,7 +391,9 @@ foreach (['name="name"', 'name="phone"', 'name="email"', 'name="province"', 'nam
     'name="shipping_method"', 'name="payment_method"', 'name="code"', 'Order summary', 'Summary Dress', 'Total payable', 'Place order', 'x-data="checkout(JSON.parse(', 'carrier-logo', 'Cash on Delivery'] as $needle) {
     T::contains($needle, $page->body, 'checkout shows ' . $needle);
 }
-T::ok(!str_contains($page->body, 'Bank Transfer') && !str_contains($page->body, 'Debit / Credit Card'), 'bank transfer hidden without details, card disabled');
+T::ok(!str_contains($page->body, 'Bank Transfer') && !str_contains($page->body, 'value="card"'), 'bank transfer hidden without details, card cannot be chosen');
+T::ok(str_contains($page->body, 'data-card-soon') && str_contains($page->body, 'Coming soon'), 'card shows as a disabled "coming soon" row until it is set up');
+T::contains('Debit / Credit Card coming soon', http('GET', '/cart')->body, 'the bag page says card is coming soon');
 T::contains('noindex', $page->body, 'checkout noindex');
 $db->exec("UPDATE shipping_methods SET is_active = 0 WHERE code = 'dhl'");
 

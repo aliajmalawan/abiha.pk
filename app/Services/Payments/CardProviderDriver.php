@@ -10,10 +10,9 @@ use App\Core\Request;
  * What a card provider (any hosted-checkout gateway) must supply. The shop itself never sees, stores or
  * transmits a card number or CVV: the customer enters card details on the PROVIDER's hosted page.
  *
- * A driver is a small class written against the provider's own documentation, once the business has a merchant
- * account. None ships with the app, because merchant credentials and provider terms are the owner's to supply.
- * Name it in .env (CARD_PAYMENT_DRIVER=App\Services\Payments\Drivers\YourProvider) with CARD_API_KEY,
- * CARD_API_SECRET and CARD_WEBHOOK_SECRET; read them with cfg('payments.card.key') etc.
+ * A driver is a small class written against the provider's own documentation. Safepay ships in Drivers/SafepayDriver.php;
+ * name it in .env (CARD_PAYMENT_DRIVER=App\Services\Payments\Drivers\SafepayDriver) with CARD_API_KEY, CARD_API_SECRET,
+ * CARD_WEBHOOK_SECRET and CARD_ENVIRONMENT; read them with cfg('payments.card.key') etc.
  */
 interface CardProviderDriver
 {

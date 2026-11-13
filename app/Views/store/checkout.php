@@ -93,6 +93,12 @@ $couponErr = error('coupon');
                             <span><span class="font-semibold block"><?= e($g->label()) ?></span><span class="text-sm text-grey-text"><?= e($g->description()) ?></span></span>
                         </label>
                     <?php endforeach; ?>
+                    <?php if (\App\Services\ContentPages::cardComingSoon()): ?>
+                        <div class="card !p-4 flex items-start gap-3 opacity-60" aria-disabled="true" data-card-soon>
+                            <input type="radio" class="mt-1" disabled aria-label="Debit / Credit Card, coming soon">
+                            <span><span class="font-semibold block">Debit / Credit Card <span class="badge badge--ivory ml-1">Coming soon</span></span><span class="text-sm text-grey-text">Card payment will be available here shortly.</span></span>
+                        </div>
+                    <?php endif; ?>
                     <?php if (!$gateways): ?><p class="alert alert--warning">No payment methods are enabled yet.</p><?php endif; ?>
                 </div>
                 <?php if (has_error('payment_method')): ?><p class="error-text"><?= e(error('payment_method')) ?></p><?php endif; ?>

@@ -69,6 +69,8 @@ $m = $summary['shipping_method'];
                         <dd><?= $summary['shipping'] ? e(money($summary['shipping'])) : 'Free' ?></dd></div>
                     <div class="flex justify-between border-t border-line pt-3 text-base font-bold font-display"><dt>Total</dt><dd><?= e(money($summary['total'])) ?></dd></div>
                 </dl>
+                <?php $payLabels = \App\Services\ContentPages::paymentLabels(); $soon = \App\Services\ContentPages::cardComingSoon(); ?>
+                <?php if ($payLabels || $soon): ?><p class="text-xs text-grey-text flex items-center gap-2" data-pay-note><?= icon('credit-card', 16) ?><span>Pay by <?= e(\App\Services\ContentPages::join($payLabels, ', ', ' or ')) ?><?= $soon ? ($payLabels ? '. ' : '') . 'Debit / Credit Card coming soon' : '' ?></span></p><?php endif; ?>
                 <p class="text-xs text-grey-text">Shipping is an estimate. You can choose your delivery method at checkout.</p>
                 <a href="<?= e(route('checkout')) ?>" class="btn btn--lg btn--block">Checkout</a>
                 <a href="<?= e(route('shop')) ?>" class="block text-center text-sm link">Continue shopping</a>

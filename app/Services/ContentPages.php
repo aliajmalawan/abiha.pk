@@ -31,6 +31,13 @@ final class ContentPages
         return trim((string) Settings::get('contact.email', Config::get('abiha.contact.email')));
     }
 
+    /** True while card payment exists in the shop but is not set up yet (no keys): the pages then say "coming soon", never offer it. */
+    public static function cardComingSoon(): bool
+    {
+        $card = \App\Services\Payments\PaymentManager::all()['card'] ?? null;
+        return $card !== null && !$card->isAvailable();
+    }
+
     /** @return list<string> */
     public static function paymentLabels(): array
     {
