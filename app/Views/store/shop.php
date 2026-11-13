@@ -33,7 +33,7 @@ $total = $products->total;
         <?php /* Filters: sidebar on desktop, slide-over drawer on mobile (single form) */ ?>
         <div class="lg:block" :class="filtersOpen ? 'fixed inset-0 z-[220]' : 'hidden'">
             <div class="absolute inset-0 bg-ink/50 lg:hidden" @click="filtersOpen = false"></div>
-            <form id="filters" method="GET" action="<?= e(route('shop')) ?>" aria-label="Product filters"
+            <form id="filters" method="GET" action="<?= e(route('shop')) ?>" aria-label="Product filters" @change="if (window.matchMedia('(min-width: 1024px)').matches) $el.requestSubmit()"
                   class="max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:w-[88%] max-lg:max-w-sm max-lg:bg-white max-lg:overflow-y-auto max-lg:p-6 space-y-7">
                 <div class="flex items-center justify-between lg:hidden">
                     <h2 class="!text-lg !mb-0">Filters</h2>

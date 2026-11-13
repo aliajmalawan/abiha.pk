@@ -20,13 +20,24 @@ $card = $gateways['card'] ?? null;
     <section class="card space-y-4">
         <h2 class="!text-lg !mb-0">Available at checkout</h2>
         <?php foreach ($gateways as $code => $g): ?>
-            <?php if ($code === 'bank_transfer') { continue; } ?>
-            <?php $off = $code === 'card' && !$g->isAvailable(); ?>
-            <label class="check"><input type="checkbox" name="enabled[]" value="<?= e($code) ?>"<?= in_array($code, $checked, true) && !$off ? ' checked' : '' ?><?= $off ? ' disabled' : '' ?>> <span><strong><?= e($g->label()) ?></strong><?php if ($off): ?> <span class="badge badge--ivory">Not set up</span><?php endif; ?><br><span class="text-grey-text text-sm"><?= e($g->description()) ?></span></span></label>
+            <?php
+            $off = $code === 'card' && !$g->isAvailable();
+            $noBank = $code === 'bank_transfer' && trim((string) old('bank_details', $bankDetails)) === '';
+            $on = in_array($code, $checked, true) && !$off;
+            ?>
+            <label class="check"><input type="checkbox" name="enabled[]" value="<?= e($code) ?>"<?= $on ? ' checked' : '' ?><?= $off ? ' disabled' : '' ?>>
+                <span><strong><?= e($g->label()) ?></strong>
+                    <?php if ($off): ?><span class="badge badge--ivory">Not set up</span>
+                    <?php elseif ($on && $noBank): ?><span class="badge badge--ivory">On, but no account details yet</span>
+                    <?php elseif ($on): ?><span class="badge badge--success">On: shown to customers</span>
+                    <?php else: ?><span class="badge badge--ivory">Off: hidden</span><?php endif; ?>
+                    <br><span class="text-grey-text text-sm"><?= e($g->description()) ?></span>
+                    <?php if ($off): ?><br><span class="text-sm">Enter the Safepay keys in the Card section below to turn this on.</span><?php endif; ?>
+                    <?php if ($noBank): ?><br><span class="text-sm">Add your account details in the Bank transfer section below to turn this on.</span><?php endif; ?></span></label>
         <?php endforeach; ?>
         <?php if ($enabledErr): ?><span class="error-text"><?= e($enabledErr) ?></span><?php endif; ?>
         <?php if ($m = error('enabled')): ?><span class="error-text" role="alert"><?= e($m) ?></span><?php endif; ?>
-        <p class="help">Bank transfer has its own switch in its section below. Customers only see ticked methods. If none are ticked, nobody can check out.</p>
+        <p class="help">Tick a method and press Save to turn it on: it appears at checkout and in the bag page at once. Untick and Save to turn it off: it disappears from both. Customers only see ticked methods. If none are ticked, nobody can check out.</p>
     </section>
 
     <section class="card space-y-3"><h2 class="!text-lg !mb-0">Cash on Delivery</h2>
@@ -37,9 +48,6 @@ $card = $gateways['card'] ?? null;
     </section>
 
     <section class="card space-y-3"><h2 class="!text-lg !mb-0">Bank transfer</h2>
-        <?php $bankOn = in_array('bank_transfer', $checked, true); $bankHas = trim((string) old('bank_details', $bankDetails)) !== ''; ?>
-        <input type="hidden" name="bank_visible" value="0">
-        <label class="check"><input type="checkbox" name="bank_visible" value="1"<?= $bankOn ? ' checked' : '' ?>> <span><strong>Show Bank Transfer at checkout</strong> <?php if ($bankOn && $bankHas): ?><span class="badge badge--success">Shown</span><?php elseif ($bankOn): ?><span class="badge badge--ivory">On, but no account details yet</span><?php else: ?><span class="badge badge--ivory">Hidden</span><?php endif; ?><br><span class="text-grey-text text-sm">Untick and press Save to hide it from customers. Your account details below are kept, so you can show it again any time.</span></span></label>
         <div class="field"><label class="label" for="bank_details">Account details shown to customers after ordering</label>
             <textarea class="textarea" id="bank_details" name="bank_details" rows="5" maxlength="1000"><?= e(old('bank_details', $bankDetails)) ?></textarea>
             <?php if ($m = error('bank_details')): ?><span class="error-text"><?= e($m) ?></span><?php else: ?><span class="help">Bank, account title, account number / IBAN. Required to enable Bank Transfer.</span><?php endif; ?></div>

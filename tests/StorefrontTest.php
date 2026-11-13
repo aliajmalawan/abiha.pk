@@ -418,3 +418,9 @@ foreach (['product', 'sections/promo', 'sections/brand', 'sections/social', 'par
     T::ok(!str_contains((string) file_get_contents(APP_PATH . "/Views/store/{$view}.php"), 'object-cover'), "{$view} never crops");
 }
 reset_state();
+
+T::$current = 'Shop filters apply by themselves';
+$shopPage = http('GET', '/shop')->body;
+T::ok(str_contains($shopPage, 'id="filters"') && str_contains($shopPage, '@change="if (window.matchMedia') && str_contains($shopPage, 'requestSubmit()'), 'choosing a category applies the filter on desktop without pressing Apply');
+T::contains('<button class="btn btn--sm flex-1">Apply</button>', $shopPage, 'the Apply button stays for the phone drawer');
+reset_state();

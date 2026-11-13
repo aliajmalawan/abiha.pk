@@ -43,7 +43,6 @@ final class PaymentSettingsController extends AdminController
             'card_api_secret' => ['nullable', 'string', 'max:300'],
             'card_webhook_secret' => ['nullable', 'string', 'max:300'],
             'card_clear' => ['nullable', 'boolean'],
-            'bank_visible' => ['nullable', 'boolean'],
             'cod_note' => ['nullable', 'string', 'max:300'],
             'bank_details' => ['nullable', 'string', 'max:1000'],
         ]));
@@ -62,13 +61,6 @@ final class PaymentSettingsController extends AdminController
         }
         $all = PaymentManager::all();
         $enabled = array_values(array_map('strval', (array) ($input['enabled'] ?? [])));
-        // The Bank transfer switch (its own section) decides whether it is listed; without it the plain list decides.
-        if (array_key_exists('bank_visible', $input)) {
-            $enabled = array_values(array_filter($enabled, static fn ($c) => $c !== 'bank_transfer'));
-            if (!empty($input['bank_visible']) && $input['bank_visible'] !== '0') {
-                $enabled[] = 'bank_transfer';
-            }
-        }
         $codNote = trim((string) ($input['cod_note'] ?? ''));
         $bank = trim((string) ($input['bank_details'] ?? ''));
 
