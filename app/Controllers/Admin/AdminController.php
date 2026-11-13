@@ -16,7 +16,7 @@ abstract class AdminController extends Controller
     {
         Session::flash('errors', $errors);
         if ($withInput) {
-            unset($input['_token'], $input['_method']);
+            unset($input['_token'], $input['_method'], $input['card_api_secret'], $input['card_webhook_secret']);   // secrets are never put back into a form
             Session::flash('old', $input);
         }
         return $this->back($fallback);

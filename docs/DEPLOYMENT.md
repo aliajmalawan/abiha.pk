@@ -208,18 +208,14 @@ signed notice arrives and the website has asked Safepay to confirm that payment 
 1. Open a Safepay merchant account (getsafepay.com). Start in the **sandbox** (test) dashboard. Sandbox and live have different keys.
 2. In the Safepay dashboard copy the **API key** (public, starts with `sec_`), the **Secret key**, and add a webhook endpoint:
    `https://abiha.pk/webhooks/payments/card` (the "shared secret" it shows is the webhook secret).
-3. In the live `.env` add:
-   ```
-   PAYMENTS_ENABLED=cod,bank_transfer,card
-   CARD_PAYMENT_DRIVER=App\Services\Payments\Drivers\SafepayDriver
-   CARD_ENVIRONMENT=sandbox
-   CARD_API_KEY=<API key>
-   CARD_API_SECRET=<Secret key>
-   CARD_WEBHOOK_SECRET=<webhook shared secret>
-   ```
-4. `php bin/console.php cache:clear`. Admin -> Payment methods shows "Ready"; tick "Debit / Credit Card" there.
+3. In the website: **Admin -> Payment methods -> Debit / Credit Card (Safepay)**. Choose Sandbox, paste the API key, the Secret key and the
+   Webhook secret, and press Save. The secret key and webhook secret are stored encrypted in the database and are never shown again
+   (leave them empty on later saves to keep them). Nothing needs to be added to `.env`. (Keys put in `.env` as `CARD_API_KEY`,
+   `CARD_API_SECRET`, `CARD_WEBHOOK_SECRET` and `CARD_ENVIRONMENT` still work, and keys saved in the admin win over them.)
+   The keys are encrypted with `APP_KEY`: if you ever change `APP_KEY`, enter the keys again.
+4. Tick "Debit / Credit Card" under "Available at checkout" and press Save again.
 5. **Test in sandbox first**: place an order, pay with Safepay's test card, and check the order turns "Paid" and "Confirmed" and the customer email arrives.
    If the order stays unpaid, look at `storage/logs` for "Safepay:" lines and at Safepay's webhook delivery log.
-6. To go live switch to the live dashboard's keys and webhook secret, and set `CARD_ENVIRONMENT=production`.
+6. To go live, paste the live dashboard's keys and webhook secret in the same place and choose "Live (real payments)".
 
 The amount is sent in the lowest unit (PKR 1,250 = 125000) and always comes from the order in the database. Cash on delivery and bank transfer are unchanged.

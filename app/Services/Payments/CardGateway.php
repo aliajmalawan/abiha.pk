@@ -72,8 +72,10 @@ class CardGateway implements OnlinePaymentGateway
         // A pending record with the provider's reference. The order is NOT paid until the verified webhook says so.
         $db = Database::get();
         $existing = $db->one("SELECT id FROM payments WHERE provider = 'card' AND reference = ?", [$checkout->reference]);
+        // The order was created with an empty pending payment row: use it instead of leaving it behind.
+        $existing ??= $db->one("SELECT id FROM payments WHERE order_id = ? AND provider = 'card' AND reference IS NULL AND status = 'pending' ORDER BY id LIMIT 1", [(int) $order['id']]);
         if ($existing) {
-            $db->exec("UPDATE payments SET order_id = ?, amount = ?, status = 'pending', updated_at = ? WHERE id = ?", [(int) $order['id'], (int) $order['total'], now(), $existing['id']]);
+            $db->exec("UPDATE payments SET order_id = ?, reference = ?, amount = ?, status = 'pending', updated_at = ? WHERE id = ?", [(int) $order['id'], $checkout->reference, (int) $order['total'], now(), $existing['id']]);
             $paymentId = (int) $existing['id'];
         } else {
             $paymentId = $db->insert("INSERT INTO payments (order_id, provider, reference, status, amount, created_at, updated_at) VALUES (?, 'card', ?, 'pending', ?, ?, ?)",

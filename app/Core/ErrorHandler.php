@@ -110,7 +110,7 @@ final class ErrorHandler
     private static function safeOld(Request $request): array
     {
         $post = $request->post;
-        unset($post['_token'], $post['_method'], $post['password'], $post['password_confirmation'], $post['current_password']);
+        unset($post['_token'], $post['_method'], $post['password'], $post['password_confirmation'], $post['current_password'], $post['card_api_secret'], $post['card_webhook_secret']);
         if (!Middleware::isAdminPath($request->path)) {
             $post = array_filter($post, static fn ($v) => is_scalar($v) || $v === null);
         }

@@ -29,6 +29,7 @@ return [
         'key' => env('CARD_API_KEY'),
         'secret' => env('CARD_API_SECRET'),
         'webhook_secret' => env('CARD_WEBHOOK_SECRET'),
+        'dev_base_url' => env('CARD_DEV_BASE_URL'),             // local testing only (never set on a live site)
         'environment' => env('CARD_ENVIRONMENT', 'sandbox'),   // sandbox while testing, production when live
     ],
 

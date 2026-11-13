@@ -8,6 +8,8 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Services\ActivityLogger;
 use App\Services\Admin\Rules;
+use App\Services\Payments\CardSettings;
+use App\Services\Payments\Drivers\SafepayDriver;
 use App\Services\Payments\PaymentManager;
 use App\Support\Settings;
 
@@ -21,21 +23,52 @@ final class PaymentSettingsController extends AdminController
             'enabled' => PaymentManager::enabledCodes(),
             'codNote' => Settings::get('cod.note'),
             'bankDetails' => Settings::get('bank.details'),
+            'cardKey' => (string) cfg('payments.card.key'),
+            'cardHasSecret' => trim((string) cfg('payments.card.secret')) !== '',
+            'cardHasWebhook' => trim((string) cfg('payments.card.webhook_secret')) !== '',
+            'cardEnvironment' => SafepayDriver::environment(),
+            'cardSaved' => CardSettings::stored(),
         ], 'Payments');
     }
 
     public function update(Request $request): Response
     {
-        $all = PaymentManager::all();
         $back = route('admin.payments.edit');
         $input = $request->post;
         Rules::throwIf(Rules::run($input, [
             'enabled' => ['nullable', 'array'],
-            'enabled.*' => ['string', 'in:' . implode(',', array_keys($all))],
+            'enabled.*' => ['string', 'in:' . implode(',', array_keys(PaymentManager::all()))],
+            'card_environment' => ['nullable', 'in:sandbox,production'],
+            'card_api_key' => ['nullable', 'string', 'max:200'],
+            'card_api_secret' => ['nullable', 'string', 'max:300'],
+            'card_webhook_secret' => ['nullable', 'string', 'max:300'],
+            'card_clear' => ['nullable', 'boolean'],
+            'bank_visible' => ['nullable', 'boolean'],
             'cod_note' => ['nullable', 'string', 'max:300'],
             'bank_details' => ['nullable', 'string', 'max:1000'],
         ]));
+        // Card keys first, so a method can be switched on in the same save.
+        $clear = !empty($input['card_clear']);
+        $changed = $clear || trim((string) ($input['card_api_key'] ?? '')) !== '' || trim((string) ($input['card_api_secret'] ?? '')) !== '' || trim((string) ($input['card_webhook_secret'] ?? '')) !== ''
+            || in_array($input['card_environment'] ?? '', ['sandbox', 'production'], true) && $input['card_environment'] !== SafepayDriver::environment();
+        if ($changed) {
+            CardSettings::save([
+                'key' => (string) ($input['card_api_key'] ?? ''),
+                'secret' => (string) ($input['card_api_secret'] ?? ''),
+                'webhook_secret' => (string) ($input['card_webhook_secret'] ?? ''),
+                'environment' => (string) ($input['card_environment'] ?? ''),
+            ], $clear);
+            \App\Support\SiteSettings::apply();
+        }
+        $all = PaymentManager::all();
         $enabled = array_values(array_map('strval', (array) ($input['enabled'] ?? [])));
+        // The Bank transfer switch (its own section) decides whether it is listed; without it the plain list decides.
+        if (array_key_exists('bank_visible', $input)) {
+            $enabled = array_values(array_filter($enabled, static fn ($c) => $c !== 'bank_transfer'));
+            if (!empty($input['bank_visible']) && $input['bank_visible'] !== '0') {
+                $enabled[] = 'bank_transfer';
+            }
+        }
         $codNote = trim((string) ($input['cod_note'] ?? ''));
         $bank = trim((string) ($input['bank_details'] ?? ''));
 
@@ -53,7 +86,7 @@ final class PaymentSettingsController extends AdminController
         Settings::put('payments.enabled', $enabled);
         Settings::put('cod.note', $codNote !== '' ? $codNote : null);
         Settings::put('bank.details', $bank !== '' ? $bank : null);
-        ActivityLogger::log('payments.settings_updated', null, null, ['enabled' => $enabled]);
+        ActivityLogger::log('payments.settings_updated', null, null, ['enabled' => $enabled, 'card_keys_changed' => $changed]);   // never the key values
 
         return $this->back($back, $enabled ? 'Payment settings saved.' : 'Saved. No payment method is enabled, so customers cannot check out until you enable one.');
     }

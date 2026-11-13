@@ -14,6 +14,10 @@ declare(strict_types=1);
 putenv('APP_ENV=testing');
 putenv('ABIHA_SAMPLE_LABELS=true');   // tests check the development placeholder labels, whatever the local .env says
 putenv('APP_DEBUG=false');
+foreach (['CARD_PAYMENT_DRIVER', 'CARD_API_KEY', 'CARD_API_SECRET', 'CARD_WEBHOOK_SECRET'] as $cardVar) {
+    putenv($cardVar . '=');   // the tests set card options themselves, whatever the local .env holds
+}
+putenv('PAYMENTS_ENABLED=cod,bank_transfer');
 putenv('MAIL_DRIVER=array');
 putenv('APP_URL=http://localhost/abiha.pk');
 

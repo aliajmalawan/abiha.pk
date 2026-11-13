@@ -52,6 +52,7 @@ final class SiteSettings
         foreach ($over as $k => $v) {
             Config::set($k, $v);
         }
+        \App\Services\Payments\CardSettings::apply();   // card keys saved in Admin -> Payment methods
     }
 
     /** Public URL of an uploaded branding file (setting key such as site.logo / site.favicon), or null. */

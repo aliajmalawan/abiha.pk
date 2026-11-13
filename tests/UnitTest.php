@@ -25,7 +25,7 @@ T::eq(0, Config::get('abiha.currency.decimals'), 'currency has no decimals');
 T::eq(30, Config::get('abiha.admin_idle_minutes'), 'admin idle minutes default');
 T::eq(7, count(Config::get('abiha.provinces')), 'the seven provinces/territories');
 T::eq(['cod', 'bank_transfer'], Config::get('payments.enabled'), 'payments enabled default');
-T::eq(null, Config::get('payments.card.driver'), 'card payments have no driver by default');
+T::ok(in_array(Config::get('payments.card.driver'), [null, ''], true), 'card payments have no driver unless one is configured');
 T::eq([], Config::get('shipping.couriers'), 'no courier registered');
 T::eq(6, count(Config::get('faq.groups')), 'FAQ groups ported');
 T::eq('fallback', Config::get('abiha.nope.deeper', 'fallback'), 'missing key returns default');

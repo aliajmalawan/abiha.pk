@@ -134,12 +134,25 @@ final class SafepayDriver implements CardProviderDriver
 
     public static function apiBase(): string
     {
+        if ($dev = self::devBase()) {
+            return $dev;
+        }
         return self::environment() === 'production' ? 'https://api.getsafepay.com' : 'https://sandbox.api.getsafepay.com';
     }
 
     public static function checkoutBase(): string
     {
+        if ($dev = self::devBase()) {
+            return $dev;
+        }
         return self::environment() === 'production' ? 'https://getsafepay.com' : 'https://sandbox.api.getsafepay.com';
+    }
+
+    /** Local testing only: CARD_DEV_BASE_URL points the driver at the local stand-in. Ignored on a live site. */
+    private static function devBase(): ?string
+    {
+        $base = trim((string) Config::get('payments.card.dev_base_url'));
+        return $base !== '' && \App\Controllers\Dev\FakeSafepayController::allowed() ? rtrim($base, '/') : null;
     }
 
     /** @return array{0:int,1:array} HTTP status and decoded JSON (empty array when the reply is not JSON) */

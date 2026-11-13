@@ -339,7 +339,7 @@ ms_fresh();
 /* ---------------- payment settings ---------------- */
 T::$current = 'payment settings';
 $r = http('GET', '/admin/payments', [], $admin);
-T::ok(str_contains($r->body, 'Card payments are switched off') && str_contains($r->body, 'CARD_API_KEY') && str_contains($r->body, 'webhooks/payments/card'), 'card status read-only');
+T::ok(str_contains($r->body, 'Not connected') && str_contains($r->body, 'name="card_api_secret"') && str_contains($r->body, 'webhooks/payments/card'), 'card shows as not connected, with its key form and webhook address');
 Settings::forget('payments.enabled');
 http('PUT', '/admin/payments', ['enabled' => ['bank_transfer'], 'bank_details' => '']);
 T::ok(ms_err('bank_details') !== '', 'bank transfer needs details');

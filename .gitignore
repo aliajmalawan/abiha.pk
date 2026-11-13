@@ -2,6 +2,7 @@
 /storage/logs/*
 /storage/mail/*
 /storage/sessions/*
+/storage/dev/*
 /storage/backups/*
 /storage/cache/*
 /storage/app/public/*
