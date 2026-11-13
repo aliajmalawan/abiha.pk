@@ -13,7 +13,7 @@ declare(strict_types=1);
  *   php bin/console.php cron                        Send queued email, prune old rate-limit counters (run every 5 minutes)
  *   php bin/console.php mail:test <email>           Send a test email with the current mail settings and show the real error if it fails
  *   php bin/console.php media:optimize [--force]    Make the responsive WebP versions of every stored photo that lacks them (--force: redo all)
- *   php bin/console.php assets:build                One small CSS file (abiha.css + theme.css, minified) and pre-compressed .gz copies of the CSS/JS
+ *   php bin/console.php assets:build                One small CSS file (abiha.css + theme.css, minified)
  *   php bin/console.php backup                      mysqldump + uploaded photos to storage/backups (keeps 14)
  *   php bin/console.php preflight                   Can this server run ABIHA? (PHP, extensions, .env, DB, folders, web root)
  *   php bin/console.php storage:link                Create public/storage -> storage/app/public (symlink or Windows junction)
@@ -274,7 +274,7 @@ switch ($cmd) {
 
     case 'assets:build':
         // Run after changing public/assets/abiha/theme.css or any script there. The pages use app.min.css only while it is newer
-        // than its sources, so a forgotten build never shows stale styling; the .gz copies are what the web server sends to browsers.
+        // than its sources, so a forgotten build never shows stale styling.
         $dir = PUBLIC_PATH . '/assets/abiha';
         $min = static function (string $css): string {
             $css = (string) preg_replace('#/\*.*?\*/#s', '', $css);                  // comments
@@ -288,13 +288,7 @@ switch ($cmd) {
         file_put_contents($dir . '/app.min.css', $base . "
 " . $theme . "
 ");
-        $rows = [];
-        foreach (['app.min.css', 'abiha.js', 'media.js', 'admin-charts.js'] as $f) {
-            $raw = (string) file_get_contents($dir . '/' . $f);
-            file_put_contents($dir . '/' . $f . '.gz', gzencode($raw, 9));
-            $rows[] = sprintf('%s %d KB -> %d KB gzip', $f, round(strlen($raw) / 1024), round(filesize($dir . '/' . $f . '.gz') / 1024));
-        }
-        out('Assets built: ' . implode('; ', $rows) . '.');
+        out(sprintf('Assets built: app.min.css %d KB (the web server compresses it for visitors).', round(filesize($dir . '/app.min.css') / 1024)));
         break;
 
     case 'media:optimize':

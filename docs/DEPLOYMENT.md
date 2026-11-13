@@ -150,10 +150,12 @@ dashboard simply hides its traffic strip and the Analytics page shows an error.
 
 What makes the shop fast, and what to run:
 
-- **Compression:** pages and JSON are gzip-compressed by the application itself when the host's Apache does not do it (5 to 8 times smaller:
-  a 120 KB home page is about 15 KB on the wire). CSS and JS are sent from pre-compressed `.gz` copies by `public/.htaccess`.
-- **One small stylesheet:** `php bin/console.php assets:build` merges `abiha.css` and `theme.css` into `app.min.css` (+ `.gz` copies of the CSS and
-  JS files). Run it after every change to `public/assets/abiha/theme.css` or any script there. The pages use `app.min.css` only while it is newer
+- **Compression:** pages and JSON are gzip-compressed by the application itself when the host's server does not do it (5 to 8 times smaller:
+  a 120 KB home page is about 15 KB on the wire). CSS and JS are compressed by the host's web server (cPanel hosts do this by default;
+  `Content-Encoding: gzip` in the browser's Network panel confirms it). The site does NOT ship its own pre-compressed `.gz` copies: when a
+  host compresses on top of them the browser cannot decode the file (`ERR_CONTENT_DECODING_FAILED`) and the page shows without styling.
+  If you ever see that error, delete any `*.gz` files in `public/assets/abiha/` and use the `public/.htaccess` of this release.
+- **One small stylesheet:** `php bin/console.php assets:build` merges `abiha.css` and `theme.css` into `app.min.css` . Run it after every change to `public/assets/abiha/theme.css` or any script there. The pages use `app.min.css` only while it is newer
   than its sources, so a forgotten build can never show stale styling (it just falls back to the two source files).
 - **Caching:** CSS, JS, fonts and photos are cached by browsers for 30 days (their addresses carry a version, so a change is picked up at once).
 - **Photos:** responsive WebP versions (see section 10); photos below the first screen load lazily; every photo has its size set so nothing jumps.

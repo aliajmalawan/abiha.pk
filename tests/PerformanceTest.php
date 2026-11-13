@@ -47,10 +47,6 @@ T::ok(str_contains($min, '.pdp-video__play') && str_contains($min, '.product-car
 T::ok(!str_contains($min, '/*'), 'comments are stripped');
 T::ok(strlen($min) < strlen((string) file_get_contents($dir . '/abiha.css')) + strlen($theme), 'and it is smaller than the two sources together');
 T::ok(!str_starts_with($min, "\xEF\xBB\xBF"), 'no byte-order mark at the start');
-foreach (['app.min.css', 'abiha.js', 'media.js'] as $f) {
-    T::eq(file_get_contents($dir . '/' . $f), gzdecode((string) file_get_contents($dir . '/' . $f . '.gz')), "{$f}.gz decompresses to the file");
-    T::ok(filesize($dir . '/' . $f . '.gz') < filesize($dir . '/' . $f) / 2, "{$f}.gz is less than half the size");
-}
 (new ReflectionProperty(Assets::class, 'fresh'))->setValue(null, null);   // look at the files again after the build
 $store = http('GET', '/', [], false)->body;
 T::contains('assets/abiha/app.min.css', $store, 'pages load the single built stylesheet');
@@ -64,7 +60,7 @@ touch($dir . '/theme.css', $prev);
 $ref->setValue(null, null);
 T::eq(true, Assets::builtCss(), 'a fresh build is used');
 $ht = (string) file_get_contents(PUBLIC_PATH . '/.htaccess');
-T::contains('Accept-Encoding} gzip', $ht, '.htaccess serves the pre-compressed copy to browsers that accept gzip');
+T::ok(!str_contains($ht, '.gz'), '.htaccess does not rewrite assets to .gz copies (hosts that also compress would send them twice and browsers fail to decode them)');
 T::contains('immutable', $ht, 'versioned CSS/JS are cached as immutable');
 
 // ---- counting a visit never delays the page

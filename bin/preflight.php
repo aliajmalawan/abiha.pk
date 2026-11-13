@@ -107,13 +107,6 @@ $check(function_exists('gzencode'), 'zlib is available (pages and assets are sen
 $assets = PUBLIC_PATH . '/assets/abiha/';
 $srcTime = (int) max((int) @filemtime($assets . 'abiha.css'), (int) @filemtime($assets . 'theme.css'));
 $check(is_file($assets . 'app.min.css') && (int) filemtime($assets . 'app.min.css') >= $srcTime, 'One minified stylesheet is built', 'The stylesheet build is missing or older than theme.css: run `php bin/console.php assets:build`', true);
-$staleGz = [];
-foreach (['app.min.css', 'abiha.js', 'media.js'] as $f) {
-    if (!is_file($assets . $f . '.gz') || filemtime($assets . $f . '.gz') < filemtime($assets . $f)) {
-        $staleGz[] = $f;
-    }
-}
-$check($staleGz === [], 'Pre-compressed CSS/JS copies are up to date', 'Compressed copies are missing or older than their file (' . implode(', ', $staleGz) . '): run `php bin/console.php assets:build`', true);
 
 fwrite(STDOUT, "\n" . ($fails ? "{$fails} failed, {$warns} warning(s). Fix the FAIL lines before going live.\n" : "Ready, {$warns} warning(s).\n"));
 return $fails ? 1 : 0;
