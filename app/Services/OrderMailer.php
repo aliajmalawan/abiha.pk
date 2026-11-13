@@ -40,7 +40,11 @@ final class OrderMailer
             return;
         }
         self::send((string) $order['email'], 'order', self::data($order, 'placed'));
+        // The owner's address: Admin -> General settings -> Order notification email, else MAIL_ADMIN_NOTIFY from .env.
         $notify = Settings::get('mail.notify');
+        if (!is_string($notify) || trim($notify) === '') {
+            $notify = Config::get('mail.admin_notify');
+        }
         if (is_string($notify) && trim($notify) !== '') {
             self::send(trim($notify), 'staff-order', ['order' => $order, 'adminUrl' => self::adminUrl($order)]);
         }
