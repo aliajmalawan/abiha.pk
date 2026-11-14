@@ -143,7 +143,9 @@ final class ContentPages
             '{login}' => '<a href="' . e(route('login')) . '">sign in</a>',
             '{register}' => '<a href="' . e(route('register')) . '">create an account</a>',
             '{forgot}' => '<a href="' . e(route('password.request')) . '">forgot password</a>',
-            '{privacy}' => '<a href="' . e(url('/pages/privacy-policy')) . '">Privacy policy</a>',
+            // A link only while the page exists and is published; until it is written the words stay, without a dead link.
+            '{privacy}' => Database::get()->value('SELECT 1 FROM pages WHERE slug = ? AND is_published = 1 LIMIT 1', ['privacy-policy'])
+                ? '<a href="' . e(url('/pages/privacy-policy')) . '">Privacy policy</a>' : 'privacy policy',
         ];
         $phone = self::phone();
         $email = self::email();

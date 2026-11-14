@@ -65,6 +65,8 @@ final class Security
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
             'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
             'Cross-Origin-Opener-Policy' => 'same-origin',
+            // Pages carry the visitor's own bag and form tokens: never shared, always checked again, but the back button stays quick.
+            'Cache-Control' => 'private, no-cache',
         ];
         if ($request->isHttps() && Config::isProduction()) {
             $defaults['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';

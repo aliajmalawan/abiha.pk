@@ -44,6 +44,7 @@ final class Session
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
+        session_cache_limiter('');          // PHP would add "no-store" to every page; Security decides per page instead
         session_start();
         self::$started = true;
 

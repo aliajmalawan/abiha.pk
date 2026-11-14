@@ -137,7 +137,7 @@ header .btn--ghost:hover{--bg:#F1ECE0}
 
 /* ---------- Phones ---------- */
 @media (max-width:639px){
-  .announce{font-size:.68rem}
+  .announce{font-size:.75rem}
   header.sticky>.container{min-height:64px!important}
   .product-card>div:not(.product-card__media){padding:.75rem .8rem 0}
   .product-card__title{font-size:1.05rem}

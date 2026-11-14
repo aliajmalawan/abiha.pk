@@ -76,3 +76,8 @@ Analytics::runDeferred();
 T::eq(1, (int) $db->value('SELECT COUNT(*) FROM page_views'), 'and written only once');
 Analytics::$deferred = false;
 Analytics::$force = null;
+
+T::$current = 'Page caching headers';
+T::eq('private, no-cache', http('GET', '/')->headers['Cache-Control'] ?? null, 'public pages are checked again, never shared, but not "no-store" (the back button stays quick)');
+T::eq('no-store, private', http('GET', '/cart')->headers['Cache-Control'] ?? null, 'the bag page is never stored');
+T::eq('no-store, private', http('GET', '/login')->headers['Cache-Control'] ?? null, 'sign-in is never stored');

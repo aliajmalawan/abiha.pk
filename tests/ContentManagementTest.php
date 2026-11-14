@@ -146,4 +146,11 @@ T::eq(null, Settings::get('faq.groups'), 'and nothing was saved');
 $sales = Fx::user('inventory_manager');
 T::eq(403, cm('GET', '/admin/faq', [], $sales)->status, 'staff without the content permission cannot edit the FAQ');
 
+// ---- no dead links to pages that are not written
+$db->exec("DELETE FROM pages WHERE slug = 'privacy-policy'");
+$faqBody = cm('GET', '/pages/faq', [], false)->body;
+T::ok(!str_contains($faqBody, '/pages/privacy-policy') && str_contains($faqBody, 'privacy policy to see'), 'the FAQ does not link to a privacy page that does not exist');
+Fx::page(['title' => 'Privacy policy', 'slug' => 'privacy-policy', 'body' => '<p>We keep your details private.</p>', 'is_published' => 1]);
+T::contains('/pages/privacy-policy', cm('GET', '/pages/faq', [], false)->body, 'once the page is published the FAQ links to it');
+
 Auth::actingAs(null);
