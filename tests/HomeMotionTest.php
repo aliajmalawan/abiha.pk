@@ -72,3 +72,10 @@ T::ok(preg_match('/@media \(hover:hover\) and \(pointer:fine\) and \(prefers-red
 T::ok(!preg_match('/\.home-3d[^{]*\{[^}]*gradient\(/', $css), 'no gradients (brand rule): light is a blurred white disc');
 T::ok(!preg_match('/\.home-3d[^{]*(home-tile__img|home-col__img|product-card__media|story-media|promo-media)[^{]*\{[^}]*object-fit:cover/', $css), 'no product, tile, story or promo picture is cropped by the depth styles');
 T::ok(str_contains((string) file_get_contents(PUBLIC_PATH . '/assets/abiha/app.min.css'), '.home-3d'), 'the built stylesheet carries the depth layer');
+
+// ---- phones: one slim contact line, a poster hero, magazine-sized headings, one small Quick add on touch
+T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.announce__contact\{width:100%;flex-wrap:nowrap;justify-content:space-between/', $css) === 1, 'the top bar is one line on phones');
+T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.home-3d \.hero-media img\{aspect-ratio:4\/5;object-fit:cover/', $css) === 1, 'the hero is a taller poster crop on phones');
+T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.home-3d section h2,\.home-3d \.acct__title\{font-size:2rem/', $css) === 1, 'every section heading is 2rem on phones');
+T::ok(preg_match('/@media \(max-width:1279px\)\{\s*\.home-3d \.hero-depth::after\{display:none\}/', $css) === 1, 'the offset frame is a desktop-only detail');
+T::ok(preg_match('/@media \(hover:none\)\{[^@]*\.product-card__media>div\.absolute>\.btn--light\{display:none\}/', $css) === 1, 'touch screens get no quick-view eye on cards');

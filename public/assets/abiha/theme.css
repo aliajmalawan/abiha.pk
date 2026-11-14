@@ -326,9 +326,39 @@ html.js .home-3d [data-reveal-group]>[data-reveal]:not([data-tilt]).is-visible{t
   .home-3d .product-card:hover{transform:none}
 }
 
-@media (max-width:639px){.home-3d .hero-depth::after{inset:12px -12px -12px 12px}}
 @keyframes hero-kb{0%{transform:scale(1.14)}to{transform:scale(1.08)}}
 @keyframes hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 @keyframes hero-progress{to{width:100%}}
 @keyframes promo-bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(-2deg)}}
 @keyframes btn-sheen{to{transform:skewX(-22deg) translateX(560%)}}
+
+/* ---------- Phones: a calm, premium mobile page ---------- */
+@media (max-width:639px){
+  /* one slim contact line instead of two stacked rows */
+  .announce{padding:.4rem var(--gutter);font-size:.72rem;letter-spacing:.03em}
+  .announce__in{gap:.15rem .75rem}
+  .announce__contact{width:100%;flex-wrap:nowrap;justify-content:space-between;gap:.5rem}
+  .announce__link{min-height:28px;padding-block:0;white-space:nowrap;min-width:0}
+  .announce__link span{overflow:hidden;text-overflow:ellipsis}
+  .announce__text{width:100%;margin:0}
+  /* headings read like a magazine, not a billboard */
+  .home-3d section h2,.home-3d .acct__title{font-size:2rem;line-height:1.1}
+  .home-3d .lead{font-size:1rem}
+  .home-3d .home-head{margin-bottom:1.6rem}
+  /* the hero picture: a taller poster crop with a gentler zoom and drift */
+  .home-3d .hero-media img{aspect-ratio:4/5;object-fit:cover;object-position:68% 50%}
+  .home-3d .hero-slide.is-active .hero-media img{animation-name:hero-kb-sm}
+  .home-3d .hero-media picture{transform:translate3d(0,calc((var(--sy,.45) - .45)*4%),0)}
+  .home-3d .hero-card{box-shadow:0 18px 44px rgba(16,16,16,.18),0 2px 6px rgba(16,16,16,.06)}
+  .home-3d .home-stats b{font-size:2.2rem}
+}
+@media (max-width:1279px){
+  .home-3d .hero-depth::after{display:none}   /* the offset frame belongs to the desktop layout, where the card floats over the picture */
+}
+/* touch screens: one small Quick add button on a card, no quick-view eye (the product page is one tap away) */
+@media (hover:none){
+  .product-card__media>div.absolute>.btn--light{display:none}
+  .product-card__media>div.absolute>.btn--sm{flex:1;min-height:40px;font-size:.7rem;letter-spacing:.12em;border-radius:6px}
+  .product-card__media>div.absolute{inset-inline:.6rem;bottom:.6rem}
+}
+@keyframes hero-kb-sm{0%{transform:scale(1.06)}to{transform:scale(1.02)}}
