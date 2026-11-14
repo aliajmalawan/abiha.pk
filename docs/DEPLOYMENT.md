@@ -219,3 +219,16 @@ signed notice arrives and the website has asked Safepay to confirm that payment 
 6. To go live, paste the live dashboard's keys and webhook secret in the same place and choose "Live (real payments)".
 
 The amount is sent in the lowest unit (PKR 1,250 = 125000) and always comes from the order in the database. Cash on delivery and bank transfer are unchanged.
+
+## 15. Privacy policy and Terms & conditions pages
+
+Both pages are written and ready in `database/content/legal_pages.sql`. They describe what the website really does (orders, accounts, cookies,
+cookie-free visit counting, cash on delivery, bank transfer and Safepay card payments) and contain no delivery times, return periods or addresses
+that the business has not published: those stay on the "Shipping & returns" page. Have a lawyer read them before relying on them.
+
+- **Without a terminal (cPanel):** phpMyAdmin -> select the website database -> SQL tab -> paste the whole content of `database/content/legal_pages.sql` -> Go.
+- **With a terminal:** `php bin/console.php pages:legal`.
+
+A page is added only if no page with the same address exists, so text you have already written or edited in Admin -> Pages is never replaced, and
+running it twice is harmless. Afterwards both pages are published, linked from the footer and can be edited in Admin -> Pages. Then clear the cache
+(`php bin/console.php cache:clear`, or save any page in the admin).
