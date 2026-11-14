@@ -8,7 +8,7 @@
         </div>
         <div data-reveal-group class="grid grid-cols-2 <?= count($collections) >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-3 sm:gap-6">
             <?php foreach ($collections as $col): $n = (int) $col['active_products_count']; ?>
-                <a href="<?= e(route('collection', ['slug' => $col['slug']])) ?>" class="home-col group" data-reveal>
+                <a href="<?= e(route('collection', ['slug' => $col['slug']])) ?>" class="home-col group" data-reveal data-tilt>
                     <div class="home-col__img"><?php if ($col['image']): ?><?= App\Support\Img::picture($col['image'], '', '(min-width:1024px) 25vw, 50vw') ?><?php else: ?><?= App\Core\View::partial('components/placeholder') ?><?php endif; ?></div>
                     <div class="mt-3 text-center">
                         <h3 class="!text-xl !mb-1"><?= e($col['name']) ?></h3>

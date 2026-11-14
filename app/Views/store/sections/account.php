@@ -18,10 +18,10 @@ if (App\Auth\Auth::check()) {
                 </div>
             </div>
             <ul class="acct__tiles">
-                <li class="acct__tile"><span class="acct__icon"><?= icon('heart', 22) ?></span><div><h3>Save favourites</h3><p>Keep a wishlist of the pieces you love.</p></div></li>
-                <li class="acct__tile"><span class="acct__icon"><?= icon('package', 22) ?></span><div><h3>Track every order</h3><p>Live status and tracking details.</p></div></li>
-                <li class="acct__tile"><span class="acct__icon"><?= icon('map-pin', 22) ?></span><div><h3>Faster checkout</h3><p>Save your delivery addresses.</p></div></li>
-                <li class="acct__tile"><span class="acct__icon"><?= icon('star', 22) ?></span><div><h3>Share your review</h3><p>Rate the pieces you have bought.</p></div></li>
+                <li class="acct__tile" data-tilt><span class="acct__icon"><?= icon('heart', 22) ?></span><div><h3>Save favourites</h3><p>Keep a wishlist of the pieces you love.</p></div></li>
+                <li class="acct__tile" data-tilt><span class="acct__icon"><?= icon('package', 22) ?></span><div><h3>Track every order</h3><p>Live status and tracking details.</p></div></li>
+                <li class="acct__tile" data-tilt><span class="acct__icon"><?= icon('map-pin', 22) ?></span><div><h3>Faster checkout</h3><p>Save your delivery addresses.</p></div></li>
+                <li class="acct__tile" data-tilt><span class="acct__icon"><?= icon('star', 22) ?></span><div><h3>Share your review</h3><p>Rate the pieces you have bought.</p></div></li>
             </ul>
         </div>
     </div>

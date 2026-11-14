@@ -17,7 +17,6 @@ declare(strict_types=1);
  *   php bin/console.php backup                      mysqldump + uploaded photos to storage/backups (keeps 14)
  *   php bin/console.php preflight                   Can this server run ABIHA? (PHP, extensions, .env, DB, folders, web root)
  *   php bin/console.php storage:link                Create public/storage -> storage/app/public (symlink or Windows junction)
- *   php bin/console.php pages:legal                 Add the Privacy policy and Terms & conditions pages (only if missing)
  *   php bin/console.php cache:clear                 Drop settings and catalogue caches
  *   php bin/console.php check                       Lint every PHP file and run the test suite
  */
@@ -333,22 +332,6 @@ switch ($cmd) {
         }
         App\Support\CatalogCache::bump();
         out(sprintf('Photos checked: %d. Optimised now: %d, already optimised: %d, file missing: %d. Originals %.1f MB, responsive versions %.1f MB.', count($paths), $done, $skipped, $missing, $before / 1048576, $after / 1048576));
-        break;
-
-    case 'pages:legal':
-        // Adds the Privacy policy and Terms & conditions pages if they do not exist yet. Never replaces a page that already exists.
-        $before = (int) $db->value("SELECT COUNT(*) FROM pages WHERE slug IN ('privacy-policy', 'terms-and-conditions')");
-        $raw = $db->raw();
-        $raw->multi_query((string) file_get_contents(BASE_PATH . '/database/content/legal_pages.sql'));
-        do {
-            if ($r = $raw->store_result()) {
-                $r->free();
-            }
-        } while ($raw->more_results() && $raw->next_result());
-        $after = (int) $db->value("SELECT COUNT(*) FROM pages WHERE slug IN ('privacy-policy', 'terms-and-conditions')");
-        App\Support\Settings::flush();
-        App\Support\CatalogCache::bump();
-        out($after > $before ? 'Added ' . ($after - $before) . ' page(s). Edit them in Admin -> Pages.' : 'Both pages already exist; nothing changed.');
         break;
 
     case 'cache:clear':

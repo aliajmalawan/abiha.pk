@@ -1,6 +1,7 @@
 <?php $banner = $banner ?? []; ?>
-<section class="section--dark on-dark relative overflow-hidden">
-    <?php if ($banner['image']): ?><?= App\Support\Img::picture($banner['image'], '', '100vw', false, false, ['class' => 'absolute inset-0 size-full object-cover opacity-40']) ?><?php endif; ?>
+<section class="section--dark on-dark relative overflow-hidden" data-parallax>
+    <?php if ($banner['image']): ?><div class="campaign-media" aria-hidden="true"><?= App\Support\Img::picture($banner['image'], '', '100vw', false, false, ['class' => 'absolute inset-0 size-full object-cover opacity-40']) ?></div><?php endif; ?>
+    <div class="campaign-frame" aria-hidden="true"></div>
     <div class="container relative py-20 lg:py-28 text-center max-w-3xl">
         <?php if ($banner['eyebrow']): ?><p class="eyebrow"><?= e($banner['eyebrow']) ?></p><?php endif; ?>
         <h2 class="!text-white"><?= e($banner['title']) ?></h2>

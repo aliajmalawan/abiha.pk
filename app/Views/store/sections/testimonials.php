@@ -7,7 +7,7 @@
         </div>
         <div class="grid grid--3 mt-10" data-reveal-group>
             <?php foreach ($testimonials as $t): ?>
-                <figure class="card !p-8 flex flex-col gap-4 relative" data-reveal>
+                <figure class="card !p-8 flex flex-col gap-4 relative" data-reveal data-tilt>
                     <span class="absolute right-6 top-3 font-display text-7xl leading-none text-gold/30" aria-hidden="true">&ldquo;</span>
                     <?= App\Core\View::partial('components/stars', ['rating' => (int) $t['rating']]) ?>
                     <blockquote class="text-base leading-relaxed">“<?= e($t['body']) ?>”</blockquote>

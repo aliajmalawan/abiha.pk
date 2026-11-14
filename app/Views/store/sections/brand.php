@@ -9,7 +9,7 @@ $figures = array_filter($stats, static fn ($n) => $n > 0);
 ?>
 <section class="section <?= e($toneClass ?? '') ?>">
     <div class="container grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div class="story-media <?= $main ? '' : 'story-media--empty' ?>" data-reveal>
+        <div class="story-media <?= $main ? '' : 'story-media--empty' ?>" data-reveal data-tilt data-parallax>
             <?php if ($main): ?><?= App\Support\Img::picture($main, (string) ($section['title'] ?: ''), '(min-width:1024px) 50vw, 100vw', false, false, ['class' => 'story-media__img']) ?><?php else: ?><?= App\Core\View::partial('components/placeholder') ?><?php endif; ?>
         </div>
         <div class="max-w-xl max-lg:text-center max-lg:mx-auto">
@@ -19,7 +19,7 @@ $figures = array_filter($stats, static fn ($n) => $n > 0);
             <p class="lead max-lg:mx-auto"><?= e(HomePage::setting($section, 'body')) ?></p>
             <?php if ($figures): ?>
                 <div class="home-stats mt-6">
-                    <?php foreach ($figures as $label => $n): ?><div><b><?= (int) $n ?></b><span class="text-sm text-grey-text"><?= e($label) ?></span></div><?php endforeach; ?>
+                    <?php foreach ($figures as $label => $n): ?><div><b data-count="<?= (int) $n ?>"><?= (int) $n ?></b><span class="text-sm text-grey-text"><?= e($label) ?></span></div><?php endforeach; ?>
                 </div>
             <?php endif; ?>
             <?php if (HomePage::setting($section, 'cta_label')): ?><a href="<?= e(HomePage::setting($section, 'cta_url', '#')) ?>" class="home-btn home-btn--outline mt-6"><?= e(HomePage::setting($section, 'cta_label')) ?></a><?php endif; ?>

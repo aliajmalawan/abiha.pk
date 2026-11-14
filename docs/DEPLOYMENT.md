@@ -220,15 +220,16 @@ signed notice arrives and the website has asked Safepay to confirm that payment 
 
 The amount is sent in the lowest unit (PKR 1,250 = 125000) and always comes from the order in the database. Cash on delivery and bank transfer are unchanged.
 
-## 15. Privacy policy and Terms & conditions pages
+## 15. Updating the live database (Privacy policy and Terms & conditions pages included)
 
-Both pages are written and ready in `database/content/legal_pages.sql`. They describe what the website really does (orders, accounts, cookies,
-cookie-free visit counting, cash on delivery, bank transfer and Safepay card payments) and contain no delivery times, return periods or addresses
-that the business has not published: those stay on the "Shipping & returns" page. Have a lawyer read them before relying on them.
+`database/content/live_update.sql` is the ONE script the live database needs for the current code: the runtime tables (rate limits, email queue),
+the analytics table, the optional product video column, and the Privacy policy and Terms & conditions pages.
 
-- **Without a terminal (cPanel):** phpMyAdmin -> select the website database -> SQL tab -> paste the whole content of `database/content/legal_pages.sql` -> Go.
-- **With a terminal:** `php bin/console.php pages:legal`.
+- phpMyAdmin -> select the website database -> SQL tab -> paste the whole file -> Go. Run it once after each code update.
+- It only creates what is missing and never deletes or edits existing data, so running it again is harmless. A page you wrote or edited in
+  Admin -> Pages is never replaced.
+- Afterwards clear the cache (cPanel File Manager -> `storage/cache`: delete the files inside, or save any page in the admin).
 
-A page is added only if no page with the same address exists, so text you have already written or edited in Admin -> Pages is never replaced, and
-running it twice is harmless. Afterwards both pages are published, linked from the footer and can be edited in Admin -> Pages. Then clear the cache
-(`php bin/console.php cache:clear`, or save any page in the admin).
+The two pages describe what the website really does (orders, accounts, cookies, cookie-free visit counting, cash on delivery, bank transfer and
+Safepay card payments). They contain no delivery times, return periods or addresses that the business has not published: those stay on the
+"Shipping & returns" page. Have a lawyer read them before relying on them. They are published, linked from the footer and editable in Admin -> Pages.

@@ -10,8 +10,8 @@ $cur = cfg('abiha.currency.symbol');
 ?>
 <section class="section <?= e($toneClass ?? '') ?>">
     <div class="container grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
-        <div class="relative overflow-hidden bg-ivory border border-line <?= e($img ? '[&_picture]:block' : 'aspect-[4/3]') ?>">
-            <?php if ($pct): ?><span class="absolute left-4 top-4 z-10 bg-ink px-3 py-1.5 text-sm font-bold text-champagne">−<?= (int) $pct ?>%</span><?php endif; ?>
+        <div class="promo-media relative overflow-hidden bg-ivory border border-line <?= e($img ? '[&_picture]:block' : 'aspect-[4/3]') ?>" data-tilt>
+            <?php if ($pct): ?><span class="promo-float absolute left-4 top-4 z-10 bg-ink px-3 py-1.5 text-sm font-bold text-champagne">−<?= (int) $pct ?>%</span><?php endif; ?>
             <?php if ($img): ?><?= App\Support\Img::picture($img, (string) $banner['title'], '(min-width:1024px) 50vw, 100vw', false, false, ['class' => 'w-full h-auto']) ?><?php else: ?><?= App\Core\View::partial('components/placeholder') ?><?php endif; ?>
         </div>
         <div class="max-lg:text-center">

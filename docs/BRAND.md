@@ -34,3 +34,4 @@ Accessible text variants: `--gold-text #8A6513` for gold text on light backgroun
 ## Shape and motion
 - Cards and controls have restrained rounded corners (6-14 px); buttons are square-ish with a 6 px radius; shadows are soft and warm.
 - Hover and focus motion is short (150-350 ms) and switched off for visitors who ask for reduced motion.
+- Depth on the home page (`theme.css` "Home page depth", `home.js`): cards tilt at most 6° towards the pointer, pictures and the hero drift at most 2 % with the pointer and 10 % with the scroll, and a soft white light follows the pointer. Fine pointers only, never on touch screens, and nothing moves for people who asked for reduced motion. Still no gradients: light is a blurred white disc, shade is black at low opacity.

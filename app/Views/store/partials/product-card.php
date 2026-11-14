@@ -1,7 +1,7 @@
 <?php
 /**
  * Product card (port of <x-product-card>). Vars: $product (Catalog card), $wishlistRemove = false, $eager = false,
- * $swatches = false, $reveal = false (adds data-reveal="data-reveal" like the old attribute bag).
+ * $swatches = false, $reveal = false (adds data-reveal="data-reveal" like the old attribute bag), $tilt = false (home page depth).
  */
 use App\Services\Catalog;
 use App\Support\Img;
@@ -18,7 +18,7 @@ $cartUrl = route('cart');
 $quickUrl = route('product.quick', $p);
 $label = $p['badge_label'];
 ?>
-<article class="product-card group"<?= !empty($reveal) ? ' data-reveal="data-reveal"' : '' ?> x-data="quickAdd(<?= (int) $p['id'] ?>, '<?= e($addUrl) ?>', '<?= e($cartUrl) ?>')">
+<article class="product-card group"<?= !empty($reveal) ? ' data-reveal="data-reveal"' : '' ?><?= !empty($tilt) ? ' data-tilt' : '' ?> x-data="quickAdd(<?= (int) $p['id'] ?>, '<?= e($addUrl) ?>', '<?= e($cartUrl) ?>')">
     <div class="product-card__media">
         <?php if ($img0): ?>
             <?= Img::picture($img0, (string) ($p['images'][0]['alt'] ?: $p['name']), $cardSizes, $eager, false, ['class' => trim('absolute inset-0 transition-opacity duration-500 ' . ($img1 ? 'group-hover:opacity-0' : ''))]) ?>

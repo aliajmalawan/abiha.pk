@@ -10,7 +10,7 @@ $basis = $layout === 'lookbook' ? 'basis-[56%] sm:basis-[36%] md:basis-[28%] lg:
 ?>
 <?php if ($layout === 'grid'): ?>
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-5" data-reveal-group>
-        <?php foreach ($products as $product): ?><?= View::partial('store/partials/product-card', ['product' => $product, 'swatches' => true, 'reveal' => true]) ?><?php endforeach; ?>
+        <?php foreach ($products as $product): ?><?= View::partial('store/partials/product-card', ['product' => $product, 'swatches' => true, 'reveal' => true, 'tilt' => true]) ?><?php endforeach; ?>
     </div>
 <?php else: ?>
     <div class="relative" x-data="{ atStart: true, atEnd: false,
@@ -30,7 +30,7 @@ $basis = $layout === 'lookbook' ? 'basis-[56%] sm:basis-[36%] md:basis-[28%] lg:
                             </span>
                         </a>
                     <?php else: ?>
-                        <?= View::partial('store/partials/product-card', ['product' => $product, 'swatches' => true]) ?>
+                        <?= View::partial('store/partials/product-card', ['product' => $product, 'swatches' => true, 'tilt' => true]) ?>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>

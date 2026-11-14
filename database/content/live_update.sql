@@ -1,3 +1,79 @@
+-- ABIHA: everything the live database needs for the current code, in ONE script.
+-- How to use (cPanel): phpMyAdmin -> click the website database on the left -> SQL tab -> paste ALL of this -> Go.
+-- Safe to run more than once and on a database that already has some of it: it only creates what is missing, it never
+-- deletes, overwrites or edits existing products, orders, customers, settings or pages.
+--   1. Runtime tables      rate limiting and the email queue (so order emails can be queued and retried)
+--   2. Traffic analytics   the page_views table behind Admin -> Analytics
+--   3. Product video       the optional video column on products
+--   4. Pages               Privacy policy and Terms & conditions (added only if missing; text you edited is never replaced)
+-- After it runs: clear the website cache (cPanel File Manager -> storage/cache: delete the files inside, or save any page in the admin).
+
+-- ============================================================
+-- 1. RUNTIME TABLES
+-- ============================================================
+-- Runtime tables of the plain-PHP version (new, additive; the Laravel tables are untouched).
+--   rate_limits   fixed-window counters for App\Core\RateLimiter (replaces Laravel's cache-based throttle)
+--   email_outbox  queued emails, delivered by App\Mail\Mailer::flush() after commit and by `php bin/console.php cron`
+CREATE TABLE IF NOT EXISTS `rate_limits` (
+  `bucket` varchar(64) NOT NULL,
+  `window_start` int(10) unsigned NOT NULL,
+  `hits` int(10) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`bucket`,`window_start`),
+  KEY `rate_limits_window_start_index` (`window_start`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `email_outbox` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `to_email` varchar(255) NOT NULL,
+  `template` varchar(80) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `html` mediumtext NOT NULL,
+  `text_body` mediumtext NOT NULL,
+  `status` varchar(10) NOT NULL DEFAULT 'pending',
+  `attempts` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `last_error` varchar(500) DEFAULT NULL,
+  `send_after` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `email_outbox_status_send_after_index` (`status`,`send_after`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 2. TRAFFIC ANALYTICS
+-- ============================================================
+-- Website traffic analytics (first-party, no cookies, no raw IP addresses): one row per counted page view.
+-- "visitor" is a one-way hash of IP + browser + day + the site key, so the same person is only recognised within one day.
+CREATE TABLE IF NOT EXISTS page_views (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    created_at DATETIME NOT NULL,
+    visitor CHAR(24) NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    channel VARCHAR(12) NOT NULL DEFAULT 'Direct',
+    source VARCHAR(120) NULL,
+    device VARCHAR(10) NOT NULL DEFAULT 'desktop',
+    browser VARCHAR(24) NOT NULL DEFAULT 'Other',
+    os VARCHAR(24) NOT NULL DEFAULT 'Other',
+    PRIMARY KEY (id),
+    KEY page_views_created_at (created_at),
+    KEY page_views_path_created (path(120), created_at),
+    KEY page_views_visitor_created (visitor, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 3. PRODUCT VIDEO COLUMN
+-- ============================================================
+-- Optional product video: either a YouTube / Vimeo / direct .mp4 or .webm link, or the path of an uploaded video file
+-- (storage/app/public/videos/...). Added only when the column is not there yet, so it is safe on any database.
+SET @has_video := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'video');
+SET @add_video := IF(@has_video = 0, 'ALTER TABLE products ADD COLUMN video VARCHAR(255) NULL', 'SELECT 1');
+PREPARE add_video_stmt FROM @add_video;
+EXECUTE add_video_stmt;
+DEALLOCATE PREPARE add_video_stmt;
+
+-- ============================================================
+-- 4. PRIVACY POLICY AND TERMS PAGES
+-- ============================================================
 -- Privacy policy and Terms & conditions pages (Admin -> Pages can edit both afterwards).
 -- Each page is added ONLY if no page with that address exists yet, so text the owner has already written is never replaced.
 -- The wording describes what this website really does (see app code); it contains no delivery times, return periods or addresses
@@ -142,3 +218,4 @@ SELECT 'Terms & conditions', 'terms-and-conditions',
 1, 1, 0, 91, NOW(), NOW()
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM `pages` WHERE `slug` = 'terms-and-conditions');
+

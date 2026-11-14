@@ -15,6 +15,7 @@ $fills = ['categories' => 'white', 'collections' => 'ivory', 'promo' => 'white',
 $n = 0;
 ?>
 <?php /* Every page needs exactly one h1; the hero banner supplies it, so only add a hidden one when there is no hero. */ ?>
+<div class="home-3d">
 <?php if (!$hasHero): ?><h1 class="sr-only"><?= e(cfg('abiha.name')) ?>®</h1><?php endif; ?>
 <?php foreach ($sections as $row):
     $type = $row['section']['type'];
@@ -35,3 +36,5 @@ $n = 0;
         <?= View::partial('store/sections/' . $type, ['section' => $row['section'], 'tone' => $tone, 'toneClass' => $toneClass] + $row['data']) ?>
     </div>
 <?php endforeach; ?>
+</div>
+<?php View::share('scripts', (string) View::shared('scripts', '') . '<script type="module" src="' . e(asset('assets/abiha/home.js')) . '"></script>'); ?>

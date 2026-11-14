@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-/* The Privacy policy and Terms & conditions pages (database/content/legal_pages.sql, bin/console.php pages:legal). */
+/* The Privacy policy and Terms & conditions pages (added by database/content/live_update.sql). */
 
 use App\Controllers\Admin\ContentController;
 use App\Core\Database;
@@ -11,7 +11,7 @@ use App\Support\HtmlSanitizer;
 T::$current = 'Legal pages';
 reset_db();
 $db = Database::get();
-$sql = (string) file_get_contents(BASE_PATH . '/database/content/legal_pages.sql');
+$sql = (string) file_get_contents(BASE_PATH . '/database/content/live_update.sql');
 $run = static function () use ($db, $sql): void {
     $raw = $db->raw();
     $raw->multi_query($sql);
@@ -71,3 +71,34 @@ T::eq('<p>MY OWN TEXT</p>', $db->value("SELECT body FROM pages WHERE slug = 'pri
 $db->exec("DELETE FROM pages WHERE slug = 'terms-and-conditions'");
 $run();
 T::eq(1, (int) $db->value("SELECT COUNT(*) FROM pages WHERE slug = 'terms-and-conditions'"), 'a missing page is added back without touching the other');
+
+// ---- the one-paste live script (database/content/live_update.sql)
+T::$current = 'Live update script';
+$all = (string) file_get_contents(BASE_PATH . '/database/content/live_update.sql');
+$exec = static function () use ($db, $all): void {
+    $raw = $db->raw();
+    $raw->multi_query($all);
+    do {
+        if ($r = $raw->store_result()) {
+            $r->free();
+        }
+    } while ($raw->more_results() && $raw->next_result());
+};
+$has = static fn (string $table): bool => (int) $db->value('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', [$table]) === 1;
+$hasVideo = static fn (): bool => (int) $db->value("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'video'") === 1;
+
+$exec();
+$exec();
+T::ok($has('page_views') && $has('rate_limits') && $has('email_outbox') && $hasVideo(), 'runs twice on an up-to-date database without error');
+
+// an older live database: no analytics table, no video column, no pages
+$db->exec('DROP TABLE page_views');
+$db->exec('ALTER TABLE products DROP COLUMN video');
+$db->exec("DELETE FROM pages WHERE slug IN ('privacy-policy', 'terms-and-conditions')");
+$exec();
+T::ok($has('page_views'), 'it creates the missing analytics table');
+T::ok($hasVideo(), 'it adds the missing product video column');
+T::eq(2, (int) $db->value("SELECT COUNT(*) FROM pages WHERE slug IN ('privacy-policy', 'terms-and-conditions')"), 'and adds the two pages');
+$commands = (string) preg_replace('/^--.*$/m', '', $all);                                   // no comments
+$commands = (string) preg_replace("/'(?:[^'\\\\]|\\\\.)*'/s", "''", $commands);               // no page text inside quotes
+T::ok(!preg_match('/\b(DELETE|DROP|TRUNCATE|UPDATE|REPLACE)\b/i', $commands), 'the script never deletes, drops or edits anything');
