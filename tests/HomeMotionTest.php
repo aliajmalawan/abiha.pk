@@ -75,7 +75,10 @@ T::ok(str_contains((string) file_get_contents(PUBLIC_PATH . '/assets/abiha/app.m
 
 // ---- phones: one slim contact line, a poster hero, magazine-sized headings, one small Quick add on touch
 T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.announce__contact\{width:100%;flex-wrap:nowrap;justify-content:space-between/', $css) === 1, 'the top bar is one line on phones');
-T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.home-3d \.hero-media img\{aspect-ratio:4\/5;object-fit:cover/', $css) === 1, 'the hero is a taller poster crop on phones');
+T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.home-3d \.hero-media\{height:clamp\(480px,70vh,640px\)/', $css) === 1, 'the hero is a full-height poster on phones');
+T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.home-3d \.hero-copy\{position:absolute;inset:auto 0 0 0/', $css) === 1, 'with the words on a panel inside the picture');
+T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.home-3d \.hero-card\{[^}]*background:rgba\(16,16,16,\.82\)/', $css) === 1, 'the panel is dark glass in the brand black');
+T::contains('<div class="hero-copy xl:absolute', $home, 'the hero text wrapper carries its hook');
 T::ok(preg_match('/@media \(max-width:639px\)\{[^@]*\.home-3d section h2,\.home-3d \.acct__title\{font-size:2rem/', $css) === 1, 'every section heading is 2rem on phones');
 T::ok(preg_match('/@media \(max-width:1279px\)\{\s*\.home-3d \.hero-depth::after\{display:none\}/', $css) === 1, 'the offset frame is a desktop-only detail');
 T::ok(preg_match('/@media \(hover:none\)\{[^@]*\.product-card__media>div\.absolute>\.btn--light\{display:none\}/', $css) === 1, 'touch screens get no quick-view eye on cards');

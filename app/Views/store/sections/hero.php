@@ -28,7 +28,7 @@ $sample = cfg('abiha.show_sample_labels');
                         </div>
 
                         <?php if ($b['show_text']): ?>
-                            <div class="xl:absolute xl:inset-y-0 xl:left-0 xl:flex xl:items-center xl:pl-8 2xl:pl-[4%] xl:pointer-events-none">
+                            <div class="hero-copy xl:absolute xl:inset-y-0 xl:left-0 xl:flex xl:items-center xl:pl-8 2xl:pl-[4%] xl:pointer-events-none">
                                 <div class="hero-depth xl:w-[clamp(19.5rem,22vw,34rem)] max-xl:relative max-xl:z-10 max-xl:-mt-10 max-xl:mx-4 sm:max-xl:mx-8 max-xl:mb-6 xl:pointer-events-auto">
                                 <div class="hero-card">
                                     <?php if ($b['eyebrow']): ?><p class="hero-eyebrow hx" style="--d:180ms"><?= e($b['eyebrow']) ?></p><?php endif; ?>
