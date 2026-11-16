@@ -22,7 +22,8 @@ use App\Core\Config;
  *   Img::src($path, 480)            the smallest WebP variant >= 480 px wide, else the original (helper media())
  *   Img::srcset($path)              "url 320w, url 480w" of the existing variants, or null (helper media_srcset())
  *   Img::dimensions($path)          [w, h] or null
- *   Img::picture($path, $alt, '(min-width: 1024px) 25vw, 50vw', $eager, $priority)   <picture> markup
+ *   Img::picture($path, $alt, '(min-width: 1024px) 25vw, 50vw', $eager, $priority, $attrs, $mobile)   <picture> markup;
+ *                                   $mobile = a second (portrait) file that phones (<640px) get instead of $path
  *   Img::generate($path) / Img::delete($path) / Img::exists($path) / Img::path($path) (absolute file path)
  */
 final class Img
@@ -122,16 +123,24 @@ final class Img
      * <picture> with the WebP variants and the original as fallback (port of <x-picture>).
      *
      * @param array<string,string> $attrs extra <img> attributes, e.g. ['class' => 'size-full object-cover']
+     * @param string|null $mobile a tall (portrait) file that phones get instead of $path; ignored when it does not exist
      */
-    public static function picture(string $path, string $alt = '', string $sizes = '100vw', bool $eager = false, bool $priority = false, array $attrs = []): string
+    public static function picture(string $path, string $alt = '', string $sizes = '100vw', bool $eager = false, bool $priority = false, array $attrs = [], ?string $mobile = null): string
     {
         $srcset = self::srcset($path);
+        $small = '';
+        if ($mobile !== null && $mobile !== '' && self::exists($mobile)) {
+            // phones get their own picture; the wide one stays the fallback and keeps the <img> size hints
+            $mset = self::srcset($mobile);
+            $small = ($mset ? '<source media="(max-width:639px)" type="image/webp" srcset="' . e($mset) . '" sizes="100vw">' : '')
+                . '<source media="(max-width:639px)" srcset="' . e(self::url($mobile)) . '">';
+        }
         $dim = self::dimensions($path);
         $extra = '';
         foreach ($attrs as $k => $v) {
             $extra .= ' ' . preg_replace('/[^A-Za-z0-9_:.@-]/', '', (string) $k) . '="' . e($v) . '"';
         }
-        return '<picture>'
+        return '<picture>' . $small
             . ($srcset ? '<source type="image/webp" srcset="' . e($srcset) . '" sizes="' . e($sizes) . '">' : '')
             . '<img src="' . e(self::url($path)) . '" alt="' . e($alt) . '"' . ($dim ? ' width="' . $dim[0] . '" height="' . $dim[1] . '"' : '')
             . ' loading="' . ($eager || $priority ? 'eager' : 'lazy') . '" decoding="async"' . ($priority ? ' fetchpriority="high"' : '') . $extra . '>'

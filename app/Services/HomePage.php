@@ -63,7 +63,7 @@ final class HomePage
             case 'categories':
                 $c = $db->all('SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id AND p.is_active = 1 AND p.deleted_at IS NULL) AS active_products_count
                     FROM categories c WHERE c.is_active = 1 AND c.is_featured = 1 AND c.parent_id IS NULL AND c.deleted_at IS NULL ORDER BY c.sort_order LIMIT ' . max(0, $limit));
-                return $c ? ['categories' => $c] : null;
+                return ($c = $c ?: self::topCategories()) ? ['categories' => $c] : null;
             case 'collections':
                 $c = $db->all('SELECT c.*, (SELECT COUNT(*) FROM collection_product cp JOIN products p ON p.id = cp.product_id WHERE cp.collection_id = c.id AND p.is_active = 1 AND p.deleted_at IS NULL) AS active_products_count
                     FROM collections c WHERE c.is_active = 1 AND c.is_trending = 1 AND c.deleted_at IS NULL ORDER BY c.sort_order LIMIT ' . max(0, $limit));
@@ -83,6 +83,35 @@ final class HomePage
             default:
                 return null;
         }
+    }
+
+    /**
+     * Used when no category is marked "featured": the top-level categories that have products, up to eight. A category without its
+     * own picture borrows the photo of one of its real products (bestsellers and new arrivals first), so nothing is invented.
+     */
+    public static function topCategories(): array
+    {
+        $db = Database::get();
+        $out = [];
+        foreach ($db->all('SELECT * FROM categories WHERE is_active = 1 AND parent_id IS NULL AND deleted_at IS NULL ORDER BY sort_order, name') as $c) {
+            $ids = Catalog::descendantIds((int) $c['id']);
+            $in = Database::in($ids);
+            $n = (int) $db->value("SELECT COUNT(*) FROM products p WHERE p.category_id IN {$in} AND p.is_active = 1 AND p.deleted_at IS NULL", $ids);
+            if ($n === 0) {
+                continue;
+            }
+            if (empty($c['image'])) {
+                $c['image'] = $db->value("SELECT pi.path FROM product_images pi JOIN products p ON p.id = pi.product_id
+                    WHERE p.category_id IN {$in} AND p.is_active = 1 AND p.deleted_at IS NULL
+                    ORDER BY p.is_bestseller DESC, p.is_new DESC, p.id DESC, pi.sort_order, pi.id LIMIT 1", $ids);
+            }
+            $c['active_products_count'] = $n;
+            $out[] = $c;
+            if (count($out) >= 8) {
+                break;
+            }
+        }
+        return $out;
     }
 
     /** Banner::placement(): active banners of a placement ordered by sort_order. */

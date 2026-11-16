@@ -366,6 +366,7 @@ html.js .home-3d [data-reveal-group]>[data-reveal]:not([data-tilt]).is-visible{t
   .home-3d .hero-media{height:clamp(480px,70vh,640px);height:clamp(480px,70svh,640px)}
   .home-3d .hero-media a,.home-3d .hero-media picture{display:block;height:100%}
   .home-3d .hero-media img{width:100%;height:100%;aspect-ratio:auto;object-fit:cover;object-position:66% 30%}
+  .home-3d .hero-media img.hero-img--m{object-position:50% 20%}
   .home-3d .hero-copy{position:absolute;inset:auto 0 0 0;z-index:2}
   .home-3d .hero-depth{margin:0 .85rem .85rem!important;transform:none!important}
   .home-3d .hero-card{overflow:hidden;border-radius:8px;background:rgba(16,16,16,.82);color:#fff;padding:1.2rem 1.2rem 1.3rem 1.45rem;box-shadow:0 18px 44px rgba(16,16,16,.3);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
@@ -377,4 +378,213 @@ html.js .home-3d [data-reveal-group]>[data-reveal]:not([data-tilt]).is-visible{t
   .home-3d .hero-card .home-btn:active{background:var(--abiha-champagne);border-color:var(--abiha-champagne)}
   .home-3d [data-hero] [role="tablist"]{inset:.9rem .9rem auto auto;justify-content:flex-end}
   .home-3d .hero-slide .home-btn--light.absolute{left:.9rem;bottom:.9rem}
+  /* with a phone picture: the WHOLE picture shows and the words are written straight on it, no panel, no band.
+     Label, headline, rule and supporting text at the top right (the clear corner of a portrait photo), the button at the bottom right. */
+  .home-3d .hero-media--m{height:auto}
+  .home-3d .hero-media--m img{height:auto;aspect-ratio:auto;object-fit:contain;object-position:50% 50%}
+  .home-3d .hero-slide.is-active .hero-media--m img{animation-name:hero-kb-m}
+  .home-3d .hero-copy--poster{position:absolute;inset:0;z-index:2;pointer-events:none}
+  .home-3d .hero-copy--poster .hero-depth{height:100%;margin:0!important}
+  .home-3d .hero-copy--poster .hero-card{position:static;display:flex;flex-direction:column;align-items:flex-end;text-align:right;height:100%;padding:.8rem 1.1rem .9rem;border:0;border-radius:0;background:transparent;color:var(--abiha-black);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .home-3d .hero-copy--poster .hero-card::before{display:none}
+  .home-3d .hero-copy--poster .hero-eyebrow{justify-content:flex-end;color:var(--abiha-black);font-size:.66rem;margin-bottom:.35rem;text-shadow:0 1px 10px rgba(255,255,255,.9)}
+  .home-3d .hero-copy--poster .hero-title{color:var(--abiha-black);font-size:clamp(1.55rem,8vw,1.9rem);line-height:1.05;perspective:600px;text-shadow:0 1px 14px rgba(255,255,255,.9),0 0 2px rgba(255,255,255,.7)}
+  .home-3d .hero-copy--poster .hero-rule{margin:.5rem 0 0;width:40px;height:2px}
+  .home-3d .hero-copy--poster .hero-sub{display:block;max-width:12.5rem;margin:.55rem 0 0;color:var(--abiha-black);font-size:.82rem;line-height:1.4;text-shadow:0 1px 12px rgba(255,255,255,.95),0 0 2px rgba(255,255,255,.7)}
+  .home-3d .hero-copy--poster .hero-cta{margin-top:auto;pointer-events:auto}   /* bottom right: the floor, away from the products */
+  .home-3d .hero-copy--poster .home-btn{background:var(--abiha-gold);border-color:var(--abiha-gold);color:var(--abiha-black);min-height:46px;padding:0 1.5rem;font-size:.78rem;box-shadow:0 10px 28px rgba(16,16,16,.28)}
+  .home-3d .hero-copy--poster .home-btn:active{background:var(--abiha-champagne);border-color:var(--abiha-champagne)}
+  .home-3d .hero-copy--poster .sample-flag{position:absolute;right:.9rem;top:.9rem;margin:0}
+  .home-3d [data-hero]:has(.hero-copy--poster) [role="tablist"]{inset:auto .9rem 4.6rem auto}
+  .home-3d .hero-w{display:inline-block}
 }
+@media (max-width:360px){.home-3d .hero-copy--poster .hero-sub{font-size:.78rem;max-width:11.5rem}}
+@media (max-width:330px){.home-3d .hero-copy--poster .hero-title{font-size:1.5rem}.home-3d .hero-copy--poster .hero-sub{font-size:.74rem;max-width:10.5rem;margin-top:.4rem}.home-3d .hero-copy--poster .hero-rule{margin-top:.4rem}}
+@keyframes hero-kb-m{0%{transform:scale(1.05)}to{transform:scale(1)}}
+/* phones, poster hero: the headline arrives word by word, the rule draws itself, the button rises and catches the light now and then */
+@media (max-width:639px) and (prefers-reduced-motion:no-preference){
+  .home-3d .hero-slide.is-active .hero-copy--poster .hero-card{animation:none}
+  .home-3d .hero-slide.is-active .hero-copy--poster .hero-title{animation:none;opacity:1}
+  .home-3d .hero-copy--poster .hero-w{opacity:0;transform:translateY(.55em) rotateX(55deg);transform-origin:50% 100%}
+  .home-3d .hero-slide.is-active .hero-copy--poster .hero-w{animation:hero-word .75s cubic-bezier(.22,.61,.36,1) forwards;animation-delay:calc(.3s + var(--i,0)*.13s)}
+  .home-3d .hero-copy--poster .home-btn::after{transform:skewX(-22deg) translateX(-220%)}
+  .home-3d .hero-slide.is-active .hero-copy--poster .home-btn::after{animation:btn-sheen-loop 4.5s cubic-bezier(.22,.61,.36,1) 1.8s infinite}
+}
+@keyframes hero-word{0%{opacity:0;transform:translateY(.55em) rotateX(55deg)}to{opacity:1;transform:none}}
+@keyframes btn-sheen-loop{0%{transform:skewX(-22deg) translateX(-220%)}22%,100%{transform:skewX(-22deg) translateX(560%)}}
+
+/* ==========================================================================
+   Home page redesign: a calmer, more luxurious page. Same palette, same fonts; richer typography, a warm-black band for
+   contrast, a trust strip, category tiles, gold ornaments. Flat colour only (no gradients), nothing here is invented content.
+   ========================================================================== */
+:root{
+  --abiha-warm-black:#15130F;      /* the dark bands: black with a warm tint, so gold and ivory sit well on it */
+  --abiha-sand:#F1ECE0;            /* a deeper ivory for tiles and bands that sit next to the page's ivory */
+}
+
+/* ---------- Typography: larger, lighter display type; calmer small caps ---------- */
+.home-3d{font-optical-sizing:auto;text-rendering:optimizeLegibility}
+.home-3d h1,.home-3d h2,.home-3d h3{font-feature-settings:"lnum" 1,"kern" 1;text-wrap:balance}
+.home-3d .home-head{margin-bottom:clamp(2.4rem,1.8rem + 2.4vw,4rem)}
+.home-3d .home-head h2{font-size:clamp(2.5rem,1.5rem + 3.6vw,4.3rem);font-weight:500;line-height:1.02;letter-spacing:-.022em;margin-bottom:.35rem}
+.home-3d .home-head .eyebrow{font-size:.74rem;letter-spacing:.28em;font-weight:700;margin-bottom:.9rem}
+.home-3d .home-head .eyebrow::before,.home-3d .home-head .eyebrow::after{width:34px}
+.home-3d .section{padding-block:clamp(4.25rem,2.5rem + 6.5vw,8.5rem)}
+.home-3d .lead{font-size:1.0625rem;line-height:1.8}
+.home-3d .hero-title{font-weight:500;font-size:clamp(2.3rem,1.2rem + 2.6vw,3.9rem);line-height:1.03;letter-spacing:-.02em}
+.home-3d .hero-eyebrow{letter-spacing:.26em}
+
+/* the rule under a heading: two hairlines and a gold diamond */
+.home-3d .home-head .gold-rule{position:relative;width:104px;height:7px;margin:1.15rem auto 0;background:none}
+.home-3d .home-head .gold-rule::before{content:"";position:absolute;left:0;top:3px;width:42px;height:1px;background:var(--abiha-gold);box-shadow:62px 0 0 var(--abiha-gold)}
+.home-3d .home-head .gold-rule::after{content:"";position:absolute;left:48.5px;top:0;width:7px;height:7px;background:var(--abiha-gold);transform:rotate(45deg)}
+
+/* ---------- Trust strip under the hero ---------- */
+.home-assure{background:#fff;border-bottom:1px solid var(--abiha-border)}
+.home-assure__list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-block:0;padding-block:0;list-style:none}
+.home-assure__item{display:flex;align-items:center;gap:.85rem;padding:1.1rem .5rem;border-bottom:1px solid var(--abiha-border)}
+.home-assure__item:nth-last-child(-n+2){border-bottom:0}
+.home-assure__icon{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--abiha-ivory);color:var(--gold-text);box-shadow:inset 0 0 0 1px rgba(201,154,53,.45)}
+.home-assure__text{display:grid;gap:.15rem;min-width:0}
+.home-assure__title{font-family:var(--font-body);font-size:.8rem;font-weight:700;letter-spacing:.04em;color:var(--abiha-black);line-height:1.3;text-decoration:none}
+a.home-assure__title:hover{color:var(--gold-text)}
+.home-assure__sub{font-size:.78rem;line-height:1.35;color:var(--grey-text)}
+@media (min-width:1024px){
+  .home-assure__list{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .home-assure__item{padding:1.6rem 1.4rem;border-bottom:0;border-right:1px solid var(--abiha-border)}
+  .home-assure__item:last-child{border-right:0}
+  .home-assure__item:first-child{padding-left:0}
+  .home-assure__title{font-size:.86rem}
+  .home-assure__sub{font-size:.82rem}
+}
+@media (max-width:639px){
+  .home-assure__item{flex-direction:column;align-items:flex-start;gap:.55rem;padding:1rem .35rem}
+  .home-assure__item:nth-child(odd){padding-right:.9rem}
+  .home-assure__icon{width:40px;height:40px}
+}
+
+/* ---------- Category tiles ---------- */
+.home-3d .home-tile__img{aspect-ratio:4/5;border-radius:20px;background:#fff;border:1px solid var(--abiha-border);box-shadow:0 1px 2px rgba(16,16,16,.04)}
+.home-3d .home-tile__img img{padding:8%}
+.home-3d .home-tile h3{font-size:1.6rem;font-weight:600;margin-bottom:.15rem}
+.home-3d .home-tile__count{display:block;margin-bottom:.5rem;font-size:.72rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-text)}
+.home-3d .home-tile .underline{text-decoration:none;border-bottom:1px solid var(--abiha-gold);padding-bottom:2px;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+.home-3d .home-tile:hover .underline{color:var(--gold-text)}
+
+/* ---------- Products: bigger names, finer prices ---------- */
+.home-3d .product-card{border-radius:18px}
+.home-3d .product-card__media{background:var(--abiha-ivory)}
+.home-3d .product-card__title{font-size:1.32rem;font-weight:600;line-height:1.2}
+.home-3d .product-card__cat{font-size:.7rem;letter-spacing:.22em}
+.home-3d .product-card .price{margin-top:.5rem;padding-top:.6rem;border-top:1px solid var(--abiha-border);font-size:1.05rem;letter-spacing:.01em}
+
+/* ---------- The warm-black band (the second product row): gold hairlines, white headings, white cards ---------- */
+.home-3d .section--dark{background:var(--abiha-warm-black);box-shadow:inset 0 1px 0 rgba(201,154,53,.5),inset 0 -1px 0 rgba(201,154,53,.5)}
+.home-3d .on-dark .home-head h2{color:#fff}
+.home-3d .on-dark .home-head .eyebrow{color:var(--abiha-champagne)}
+.home-3d .on-dark .product-card{color:var(--abiha-black);border-color:transparent;box-shadow:0 22px 50px rgba(0,0,0,.4)}
+.home-3d .on-dark .product-card h3{color:var(--abiha-black)}
+.home-3d .on-dark .product-card:hover{box-shadow:0 30px 64px rgba(0,0,0,.55)}
+.home-3d .on-dark .home-btn--outline{color:#fff;background:transparent;border-color:rgba(255,255,255,.5)}
+.home-3d .on-dark .home-btn--outline:hover{background:var(--abiha-gold);border-color:var(--abiha-gold);color:var(--abiha-black)}
+.home-3d .on-dark .home-tab{color:rgba(255,255,255,.7)}
+.home-3d .on-dark .home-tab[aria-selected=true]{color:#fff}
+
+/* ---------- Story, promo, account, newsletter ---------- */
+.home-3d .home-stats{border-color:rgba(201,154,53,.5)}
+.home-3d .home-stats b{font-size:3.1rem;font-weight:500}
+.home-3d .promo-media{border-radius:20px}
+.home-3d .section--ivory{background:var(--abiha-sand)}
+.home-3d .section--ivory .product-card{background:#fff}
+.home-3d .acct{border-radius:24px}
+.home-3d .input-group .input{min-height:54px}
+.home-3d .input-group .btn{min-height:54px;padding-inline:1.8rem}
+
+/* ---------- Wide screens: more air around the hero card ---------- */
+@media (min-width:1536px){
+  .home-3d .home-head h2{font-size:4.6rem}
+  .home-assure__title{font-size:.9rem}
+}
+@media (max-width:639px){
+  .home-3d .home-head h2{font-size:2.15rem}
+  .home-3d .home-tile h3{font-size:1.3rem}
+  .home-3d .home-tile__count{font-size:.72rem;letter-spacing:.14em}
+  .home-3d .home-stats b{font-size:2.5rem}
+}
+
+/* the other section titles (story, promo, newsletter, account) match the section heads */
+@media (min-width:640px){
+  .home-3d section h2{font-weight:500;letter-spacing:-.02em;line-height:1.05}
+  .home-3d .container.grid h2,.home-3d .max-w-2xl h2{font-size:clamp(2.2rem,1.3rem + 2.4vw,3.5rem)}
+}
+.home-3d .acct{background:var(--abiha-warm-black)}
+.home-3d .acct__tile{background:#1E1B16}
+
+/* ==========================================================================
+   Home page, more depth: scroll progress, a 3D marquee of the categories, 3D entrances for tiles and the trust strip,
+   gold gems drifting in the dark bands, a scroll cue on the hero. Everything that moves sits inside
+   prefers-reduced-motion:no-preference; without it the page is static and complete.
+   ========================================================================== */
+
+/* ---------- scroll progress: a thin gold line at the very top ---------- */
+.home-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:300;pointer-events:none;background:transparent}
+.home-progress::after{content:"";position:absolute;inset:0;background:var(--abiha-gold);transform-origin:0 50%;transform:scaleX(var(--sp,0))}
+@media (prefers-reduced-motion:reduce){.home-progress{display:none}}
+
+/* ---------- the marquee of category names ---------- */
+.home-marquee{background:var(--abiha-warm-black);overflow:hidden;padding-block:clamp(1.8rem,1rem + 3vw,3.4rem);box-shadow:inset 0 1px 0 rgba(201,154,53,.5),inset 0 -1px 0 rgba(201,154,53,.5)}
+.home-marquee__stage{perspective:900px}
+.home-marquee__track{display:flex;width:max-content;max-width:100%;flex-wrap:wrap;justify-content:center;gap:.4rem 0;margin-inline:auto;padding-inline:1rem}
+.home-marquee__set{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;margin:0;padding:0;list-style:none}
+.home-marquee__set[aria-hidden="true"]{display:none}
+.home-marquee__item{display:flex;align-items:center}
+.home-marquee__link{font-family:var(--font-heading);font-size:clamp(2.1rem,1.2rem + 3.8vw,4.6rem);font-weight:500;letter-spacing:-.015em;line-height:1.1;padding:.1em .12em;color:#fff;text-decoration:none;white-space:nowrap;transition:color .3s var(--ease)}
+.home-marquee__link.is-outline{color:transparent;-webkit-text-stroke:1.3px rgba(255,255,255,.85)}
+.home-marquee__link:hover,.home-marquee__link:focus-visible{color:var(--abiha-champagne);-webkit-text-stroke-color:var(--abiha-champagne)}
+.home-marquee__gem{flex:none;width:.5rem;height:.5rem;margin-inline:clamp(.9rem,2vw,2rem);background:var(--abiha-gold);transform:rotate(45deg)}
+@media (prefers-reduced-motion:no-preference){
+  .home-marquee__track{flex-wrap:nowrap;justify-content:flex-start;margin-inline:0;padding-inline:0;max-width:none;gap:0;animation:marquee 46s linear infinite;
+    transform:rotateX(calc((var(--sy,.5) - .5)*18deg)) rotateZ(calc((var(--sy,.5) - .5)*-1.2deg));transform-origin:50% 50%;will-change:transform}
+  .home-marquee__set{flex-wrap:nowrap;justify-content:flex-start;flex:none}
+  .home-marquee__set[aria-hidden="true"]{display:flex}
+  .home-marquee:hover .home-marquee__track{animation-play-state:paused}
+  .home-marquee__gem{animation:gem-spin 6s linear infinite}
+}
+@keyframes marquee{to{transform:translateX(-50%) rotateX(calc((var(--sy,.5) - .5)*18deg)) rotateZ(calc((var(--sy,.5) - .5)*-1.2deg))}}
+@keyframes gem-spin{to{transform:rotate(405deg)}}
+
+/* ---------- scroll cue on the hero (tablet and desktop) ---------- */
+.hero-scroll{display:none}
+@media (min-width:768px){
+  .hero-scroll{position:absolute;right:clamp(1.2rem,3vw,3rem);bottom:1.4rem;z-index:3;display:grid;place-items:start center;width:26px;height:44px;border:1.5px solid rgba(255,255,255,.9);border-radius:14px;background:rgba(16,16,16,.18);box-shadow:0 8px 24px rgba(16,16,16,.25)}
+  .hero-scroll::after{content:"";width:4px;height:8px;margin-top:8px;border-radius:2px;background:#fff}
+  .hero-scroll:hover{border-color:var(--abiha-gold)}
+}
+@media (min-width:768px) and (prefers-reduced-motion:no-preference){
+  .hero-scroll::after{animation:scroll-dot 1.8s cubic-bezier(.22,.61,.36,1) infinite}
+}
+@keyframes scroll-dot{0%{transform:translateY(0);opacity:1}70%{transform:translateY(16px);opacity:0}100%{transform:translateY(0);opacity:0}}
+
+/* ---------- dark bands: gold gems drift and turn ---------- */
+.home-3d .section--dark{position:relative;overflow:hidden}
+.home-3d .section--dark>.container{position:relative;z-index:1}
+.home-3d .section--dark::before,.home-3d .section--dark::after{content:"";position:absolute;z-index:0;background:var(--abiha-gold);opacity:.55;pointer-events:none;transform:rotate(45deg)}
+.home-3d .section--dark::before{left:7%;top:16%;width:12px;height:12px}
+.home-3d .section--dark::after{right:8%;bottom:20%;width:18px;height:18px;opacity:.35}
+@media (prefers-reduced-motion:no-preference){
+  .home-3d .section--dark::before{animation:gem-float 9s ease-in-out infinite alternate}
+  .home-3d .section--dark::after{animation:gem-float 12s ease-in-out -4s infinite alternate-reverse}
+}
+@keyframes gem-float{0%{transform:translate3d(0,0,0) rotate(45deg) scale(1)}100%{transform:translate3d(26px,-70px,0) rotate(225deg) scale(1.5)}}
+
+/* ---------- 3D entrances (the tile or card swings in from the side as it scrolls into view) ---------- */
+@media (prefers-reduced-motion:no-preference){
+  html.js .home-3d .home-tile.is-visible,html.js .home-3d .home-col.is-visible,html.js .home-3d figure.card.is-visible,html.js .home-3d .acct__tile.is-visible{
+    animation:tile-in .95s cubic-bezier(.22,.61,.36,1) backwards;animation-delay:var(--reveal-delay,0s)}
+  html.js .home-3d .home-assure__item.is-visible{animation:assure-in .8s cubic-bezier(.22,.61,.36,1) backwards;animation-delay:var(--reveal-delay,0s)}
+  .home-3d .home-assure__icon{transition:transform .8s var(--ease),background .3s,color .3s}
+  .home-3d .home-assure__item:hover .home-assure__icon{transform:rotateY(360deg);background:var(--abiha-gold);color:var(--abiha-black)}
+  .home-3d .home-assure__list{perspective:900px}
+}
+@keyframes tile-in{0%{opacity:0;transform:perspective(900px) translate3d(-46px,54px,-120px) rotateY(-34deg) rotateX(10deg)}}
+@keyframes assure-in{0%{opacity:0;transform:perspective(700px) translate3d(0,26px,-60px) rotateX(-38deg)}}

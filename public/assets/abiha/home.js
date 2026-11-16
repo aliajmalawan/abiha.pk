@@ -6,6 +6,7 @@
  *  - [data-tilt]      a card follows the pointer in 3D (fine pointers only): --tx / --ty in -1..1, --gx / --gy for the light spot
  *  - [data-hero]      the hero picture and its text card move a little with the pointer (--px / --py) and with scrolling (--sy)
  *  - [data-parallax]  --sy = how far the element has travelled through the viewport (0 entering at the bottom, 1 leaving at the top)
+ *  - .home-progress  --sp = how far down the page the visitor is (0..1): a thin gold line at the top
  *  - [data-count]     a figure counts up from 0 to its real value the first time it scrolls into view
  */
 (() => {
@@ -83,9 +84,14 @@
 
     /* ------------------------------ scroll parallax (only for what is on screen) ------------------------------ */
     const moving = new Set();
+    const bar = root.querySelector('.home-progress');
     const items = [...root.querySelectorAll('[data-parallax]'), ...(hero ? [hero] : [])];
     const place = () => {
         const vh = window.innerHeight || 1;
+        if (bar) {
+            const max = document.documentElement.scrollHeight - vh;
+            bar.style.setProperty('--sp', (max > 0 ? clamp(window.scrollY / max, 0, 1) : 0).toFixed(4));
+        }
         moving.forEach((el) => {
             const r = el.getBoundingClientRect();
             // 0 when the top edge enters at the bottom of the window, 1 when the bottom edge leaves at the top
@@ -95,6 +101,10 @@
     };
     let scrollRaf = 0;
     const onScroll = () => { if (!scrollRaf) scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; place(); }); };
+    if (bar && !items.length) {
+        window.addEventListener('scroll', onScroll, { passive: true });
+        place();
+    }
     if (items.length && 'IntersectionObserver' in window) {
         const io = new IntersectionObserver((entries) => {
             entries.forEach((en) => en.isIntersecting ? moving.add(en.target) : moving.delete(en.target));
@@ -103,6 +113,7 @@
         items.forEach((el) => io.observe(el));
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onScroll, { passive: true });
+        place();
     }
 
     /* ------------------------------ figures that count up ------------------------------ */

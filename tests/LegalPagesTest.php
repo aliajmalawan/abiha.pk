@@ -86,18 +86,21 @@ $exec = static function () use ($db, $all): void {
 };
 $has = static fn (string $table): bool => (int) $db->value('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', [$table]) === 1;
 $hasVideo = static fn (): bool => (int) $db->value("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'video'") === 1;
+$hasMobile = static fn (): bool => (int) $db->value("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'banners' AND COLUMN_NAME = 'mobile_image'") === 1;
 
 $exec();
 $exec();
-T::ok($has('page_views') && $has('rate_limits') && $has('email_outbox') && $hasVideo(), 'runs twice on an up-to-date database without error');
+T::ok($has('page_views') && $has('rate_limits') && $has('email_outbox') && $hasVideo() && $hasMobile(), 'runs twice on an up-to-date database without error');
 
 // an older live database: no analytics table, no video column, no pages
 $db->exec('DROP TABLE page_views');
 $db->exec('ALTER TABLE products DROP COLUMN video');
+$db->exec('ALTER TABLE banners DROP COLUMN mobile_image');
 $db->exec("DELETE FROM pages WHERE slug IN ('privacy-policy', 'terms-and-conditions')");
 $exec();
 T::ok($has('page_views'), 'it creates the missing analytics table');
 T::ok($hasVideo(), 'it adds the missing product video column');
+T::ok($hasMobile(), 'it adds the missing banner phone-picture column');
 T::eq(2, (int) $db->value("SELECT COUNT(*) FROM pages WHERE slug IN ('privacy-policy', 'terms-and-conditions')"), 'and adds the two pages');
 $commands = (string) preg_replace('/^--.*$/m', '', $all);                                   // no comments
 $commands = (string) preg_replace("/'(?:[^'\\\\]|\\\\.)*'/s", "''", $commands);               // no page text inside quotes

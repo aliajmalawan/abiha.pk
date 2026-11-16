@@ -7,7 +7,7 @@ Start at **Content overview**: it lists every piece of content, whether it is do
 |---|---|
 | Products: name, price, photos, video, stock, description | Products (use the formatting buttons above the description) |
 | Categories, collections | Categories, Collections |
-| Big home page picture and its words | Banners (placement "Hero") |
+| Big home page picture and its words | Banners (placement "Hero"). "Phone picture (portrait)" is the tall version phones show whole: the label, headline and supporting text are written over its top-right corner and the button sits at its bottom right, so keep the top of that picture light and clear. Without it phones show a cropped part of the wide picture |
 | Order and look of the home page blocks, the "Our story" text | Homepage |
 | Privacy policy, Terms, About us, any other page | Pages (tick "Published", and "Link from footer" to show it in the footer) |
 | FAQ questions and answers | FAQ |

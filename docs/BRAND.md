@@ -20,7 +20,7 @@ One place that says how the logo, colours, fonts and tone are used, so every pag
 | White | `#FFFFFF` | pages and cards |
 | Premium grey | `#777777` (text variant `#6B6B6B`) | secondary text |
 | Border | `#EAEAEA` (storefront hairlines use warm `#E9E4D8`) | dividers |
-Accessible text variants: `--gold-text #8A6513` for gold text on light backgrounds, `--grey-text #6B6B6B`, `--border-input #8C8C8C`. All colours are tokens in `resources/abiha-css-source/tokens.css` (compiled into `public/assets/abiha/abiha.css`); `theme.css` only refines them. Do not add new colours; status colours (success, warning, danger, info) are for messages only.
+Accessible text variants: `--gold-text #8A6513` for gold text on light backgrounds, `--grey-text #6B6B6B`, `--border-input #8C8C8C`. All colours are tokens in `resources/abiha-css-source/tokens.css` (compiled into `public/assets/abiha/abiha.css`); `theme.css` only refines them. Do not add new colours; status colours (success, warning, danger, info) are for messages only. Two supporting tones were added for the home page redesign: warm black `#15130F` (dark bands, so gold and ivory sit well on it) and sand `#F1ECE0` (a deeper ivory for tiles and bands next to the page ivory).
 
 ## Typography
 - Headings: **Cormorant Garamond** (600 / 700), lining figures. Everything else (navigation, buttons, prices, tables, forms, admin): **Inter**.

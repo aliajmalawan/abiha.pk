@@ -6,6 +6,7 @@
 --   2. Traffic analytics   the page_views table behind Admin -> Analytics
 --   3. Product video       the optional video column on products
 --   4. Pages               Privacy policy and Terms & conditions (added only if missing; text you edited is never replaced)
+--   5. Banner phone picture the optional portrait picture column on banners (what phones show in the hero)
 -- After it runs: clear the website cache (cPanel File Manager -> storage/cache: delete the files inside, or save any page in the admin).
 
 -- ============================================================
@@ -219,3 +220,13 @@ SELECT 'Terms & conditions', 'terms-and-conditions',
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM `pages` WHERE `slug` = 'terms-and-conditions');
 
+-- ============================================================
+-- 5. BANNER PHONE PICTURE COLUMN
+-- ============================================================
+-- Optional phone picture for a banner (a tall, portrait version shown instead of the wide picture on phones, where the
+-- hero fills the screen). Added only when the column is not there yet, so it is safe on any database.
+SET @has_mobile_image := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'banners' AND COLUMN_NAME = 'mobile_image');
+SET @add_mobile_image := IF(@has_mobile_image = 0, 'ALTER TABLE banners ADD COLUMN mobile_image VARCHAR(255) NULL AFTER image', 'SELECT 1');
+PREPARE add_mobile_image_stmt FROM @add_mobile_image;
+EXECUTE add_mobile_image_stmt;
+DEALLOCATE PREPARE add_mobile_image_stmt;

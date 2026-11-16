@@ -21,21 +21,21 @@ $sample = cfg('abiha.show_sample_labels');
                 <?php if ($b['image']): ?>
                     <div class="relative bg-ivory [&_picture]:block">
                         <?php if (!$b['show_text']): ?><<?= $tag ?> class="sr-only"><?= e($b['title']) ?></<?= $tag ?>><?php endif; ?>
-                        <div class="hero-media">
+                        <div class="hero-media<?= !empty($b['mobile_image']) ? ' hero-media--m' : '' ?>">
                         <?php if (!$b['show_text'] && $link): ?><a href="<?= e(url($link)) ?>" class="block" aria-label="<?= e($b['cta_label'] ?: $b['title']) ?>"><?php endif; ?>
-                            <?= Img::picture($b['image'], $b['show_text'] ? '' : (string) $b['title'], '100vw', false, $k === 0, ['class' => 'w-full h-auto max-sm:aspect-[4/3] max-sm:object-cover max-sm:object-[72%_50%]']) ?>
+                            <?= Img::picture($b['image'], $b['show_text'] ? '' : (string) $b['title'], '100vw', false, $k === 0, ['class' => 'w-full h-auto max-sm:aspect-[4/3] max-sm:object-cover max-sm:object-[72%_50%]' . (!empty($b['mobile_image']) ? ' hero-img--m' : '')], $b['mobile_image'] ?? null) ?>
                         <?php if (!$b['show_text'] && $link): ?></a><?php endif; ?>
                         </div>
 
                         <?php if ($b['show_text']): ?>
-                            <div class="hero-copy xl:absolute xl:inset-y-0 xl:left-0 xl:flex xl:items-center xl:pl-8 2xl:pl-[4%] xl:pointer-events-none">
+                            <div class="hero-copy<?= !empty($b['mobile_image']) ? ' hero-copy--poster' : '' ?> xl:absolute xl:inset-y-0 xl:left-0 xl:flex xl:items-center xl:pl-8 2xl:pl-[4%] xl:pointer-events-none">
                                 <div class="hero-depth xl:w-[clamp(19.5rem,22vw,34rem)] max-xl:relative max-xl:z-10 max-xl:-mt-10 max-xl:mx-4 sm:max-xl:mx-8 max-xl:mb-6 xl:pointer-events-auto">
                                 <div class="hero-card">
                                     <?php if ($b['eyebrow']): ?><p class="hero-eyebrow hx" style="--d:180ms"><?= e($b['eyebrow']) ?></p><?php endif; ?>
-                                    <<?= $tag ?> class="hero-title hx" style="--d:320ms"><?= e($b['title']) ?></<?= $tag ?>>
+                                    <<?= $tag ?> class="hero-title hx" style="--d:320ms"><?php foreach (preg_split('/\s+/', trim((string) $b['title'])) ?: [] as $wi => $word): ?><?= $wi ? ' ' : '' ?><span class="hero-w" style="--i:<?= $wi ?>"><?= e($word) ?></span><?php endforeach; ?></<?= $tag ?>>
                                     <hr class="hero-rule hx-rule" style="--d:520ms">
                                     <?php if ($b['subtitle']): ?><p class="hero-sub hx" style="--d:640ms"><?= e($b['subtitle']) ?></p><?php endif; ?>
-                                    <?php if ($link && $b['cta_label']): ?><div class="hx" style="--d:800ms"><a href="<?= e(url($link)) ?>" class="home-btn"><?= e($b['cta_label']) ?> <?= icon('arrow-right', 18) ?></a></div><?php endif; ?>
+                                    <?php if ($link && $b['cta_label']): ?><div class="hx hero-cta" style="--d:800ms"><a href="<?= e(url($link)) ?>" class="home-btn"><?= e($b['cta_label']) ?> <?= icon('arrow-right', 18) ?></a></div><?php endif; ?>
                                     <?php if ($b['is_sample'] && $sample): ?><span class="sample-flag mt-4">SAMPLE BANNER</span><?php endif; ?>
                                 </div>
                                 </div>
@@ -53,7 +53,7 @@ $sample = cfg('abiha.show_sample_labels');
                                 <<?= $tag ?> class="hero-title hx" style="--d:260ms"><?= e($b['title']) ?></<?= $tag ?>>
                                 <hr class="hero-rule hx-rule" style="--d:460ms">
                                 <?php if ($b['subtitle']): ?><p class="hero-sub hx" style="--d:580ms"><?= e($b['subtitle']) ?></p><?php endif; ?>
-                                <?php if ($b['cta_label']): ?><div class="hx" style="--d:740ms"><a href="<?= e($b['cta_url'] ?: route('shop')) ?>" class="home-btn home-btn--light"><?= e($b['cta_label']) ?> <?= icon('arrow-right', 18) ?></a></div><?php endif; ?>
+                                <?php if ($b['cta_label']): ?><div class="hx hero-cta" style="--d:740ms"><a href="<?= e($b['cta_url'] ?: route('shop')) ?>" class="home-btn home-btn--light"><?= e($b['cta_label']) ?> <?= icon('arrow-right', 18) ?></a></div><?php endif; ?>
                                 <?php if ($b['is_sample'] && $sample): ?><span class="sample-flag mt-4">SAMPLE BANNER</span><?php endif; ?>
                             </div>
                         </div>
@@ -71,4 +71,5 @@ $sample = cfg('abiha.show_sample_labels');
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+    <a href="#after-hero" class="hero-scroll" aria-label="Scroll down to explore"></a>
 </section>
